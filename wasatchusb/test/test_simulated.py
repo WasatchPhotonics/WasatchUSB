@@ -23,6 +23,7 @@ class Test(unittest.TestCase):
         # to connect to a simulation device before assigning a type, it
         # throws a valueerror exception.
         self.assertRaises(ValueError, sim.connect)
+        self.assertRaises(ValueError, sim.disconnect)
        
         # Specify an invalid type, throw an error
         self.assertRaises(ValueError, sim.assign, "KnownInvalid")
@@ -34,14 +35,87 @@ class Test(unittest.TestCase):
     def test_connect_reconnect_disconnect(self):
         sim = SimulatedUSB()
         # Connect ok
+        self.assertTrue(sim.assign("Stroker785L"))
+        self.assertTrue(sim.connect())
 
         # Re-connect raises typeerror
+        self.assertRaises(TypeError, sim.connect)
 
         # disconnect ok
+        self.assertTrue(sim.disconnect())
 
         # re-disconnect raises typeerror
-        self.assertRaises(sim.disconnect())
-    
+        self.assertRaises(TypeError, sim.disconnect)
+   
+    def test_get_line_of_data(self):
+        # Create a device with 1024 simulated pixels
+        sim = SimulatedUSB()
+        self.assertRaises(ValueError, sim.get_line_pixel)
+
+        self.assertTrue(sim.assign("Stroker785L"))
+        self.assertEqual(sim.pixel_count, 1024)
+        pixel_data = sim.get_line_pixel()
+        self.assertEqual(len(pixel_data), 1024)
+        self.assertEqual(pixel_data[0], 0)
+        self.assertEqual(pixel_data[1023], 1023)
+
+        # Check a device with 2048 pixels
+        sim = SimulatedUSB()
+        self.assertTrue(sim.assign("Stroker785M"))
+        self.assertEqual(sim.pixel_count, 2048)
+        pixel_data = sim.get_line_pixel()
+        self.assertEqual(len(pixel_data), 2048)
+        self.assertEqual(pixel_data[0], 0)
+        self.assertEqual(pixel_data[2047], 2047)
+
+    def test_wavenumber_conversion(self):
+        # Set some default coefficients, make sure the returned
+        # wavenumber conversion is accurate
+        sim = SimulatedUSB()
+        self.assertRaises(ValueError, sim.get_line_wavenumber)
+
+        self.assertTrue(sim.assign("Stroker785L"))
+        self.assertEqual(sim.pixel_count, 1024)
+        wavenum_axis, intensity_data = sim.get_line_wavenumber()
+        self.assertEqual(len(intensity_data), 1024)
+        self.assertEqual(len(wavenum_axis), 1024)
+  
+        first_conv = "164.33"
+        last_conv = "836.76"
+        self.assertEqual("%05.2f" % wavenum_axis[0], first_conv)
+        self.assertEqual("%05.2f" % wavenum_axis[-1], last_conv)
+        self.assertEqual(intensity_data[0], 0)
+        self.assertEqual(intensity_data[1023], 1023)
+
+    def test_coefficient_updates(self):
+        sim = SimulatedUSB()
+
+        coeff_dict = {'C0': '7.25405E+02',
+                      'C1': '1.43880E-01',
+                      'C2': '7.16617E-06',
+                      'C3': '-8.68137E-0'
+                     }
+
+        # Raises error when trying to update without assignment
+        self.assertRaises(ValueError, sim.new_coefficients, coeff_dict)
+
+        self.assertTrue(sim.assign("Stroker785M"))
+
+        # Assign new coefficients
+        self.assertTrue(sim.new_coefficients(coeff_dict))
+        return
+
+        self.assertEqual(sim.pixel_count, 2048)
+        wavenum_axis, intensity_data = sim.get_line_wavenumber()
+
+        first_conv = "167.33"
+        last_conv = "837.76"
+        self.assertEqual("%05.2f" % wavenum_axis[0], first_conv)
+        self.assertEqual("%05.2f" % wavenum_axis[-1], last_conv)
+        self.assertEqual(intensity_data[0], 0)
+        self.assertEqual(intensity_data[2048], 2048)
+
+
 
 if __name__ == "__main__":
     unittest.main()

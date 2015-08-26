@@ -9,33 +9,133 @@ class SimulatedUSB(object):
     """
     def __init__(self):
         self._assign = None
+        self.is_connected = False
+        self.vid = None
+        self.pid = None
 
     def assign(self, assign_type):
         """ If assignable type matches, permit the rest of the
         simulation functions.
         """
+        self.linearity_coefficient_c0 = 795.259
+        self.linearity_coefficient_c1 = 4.65771e-02
+        self.linearity_coefficient_c2 = -2.53654e-06
+        self.linearity_coefficient_c3 = -6.00391e-11
+        self.source_wavelength = 785.0
+
         if assign_type == "Stroker785L":
+            self.pixel_count = 1024
             self._assign = assign_type
-        
+       
+        elif assign_type == "Stroker785M":
+            self.pixel_count = 2048
+            self._assign = assign_type
+ 
         if self._assign is None:
             raise(ValueError, "Unknown device type")
 
         return True
 
+    def get_line_wavenumber(self):
+        """ Run get_line_pixel, then transform the data into wavelength
+        and ultimately wavenumber mode.
+        """
+        self.check_unassigned()
+
+        px = self.get_line_pixel()
+
+        wavel_axis = self.translate_wavelength()
+
+        wavenum_data = []
+        source_wavelength = self.source_wavelength
+
+        for wl_x in wavel_axis:
+            new_x = 1e7 / source_wavelength - 1e7 / wl_x
+            wavenum_data.append(new_x)
+
+        return wavenum_data, px
+
+    def new_coefficients(self, new_dict):
+        """ Accept a dict of c0-c3, assign to local variables
+        """
+        self.check_unassigned()
+
+        self.linearity_coefficient_c0 = new_dict['C0']
+        self.linearity_coefficient_c1 = new_dict['C1']
+        self.linearity_coefficient_c2 = new_dict['C2']
+        self.linearity_coefficient_c3 = new_dict['C3']
+        c0 = self.linearity_coefficient_c0
+        c1 = self.linearity_coefficient_c1
+        c2 = self.linearity_coefficient_c2
+        c3 = self.linearity_coefficient_c3
+        print "Assign with: %s, %s, %s, %s" \
+            % (c0, c1, c2, c3)
+        return True
+
+    def translate_wavelength(self):
+        """ Using the supplied calibration coefficients, apply the
+        polynomial transformation. Return the axis of pixel_count in
+        length.
+        """
+            
+        c0 = self.linearity_coefficient_c0
+        c1 = self.linearity_coefficient_c1
+        c2 = self.linearity_coefficient_c2
+        c3 = self.linearity_coefficient_c3
+
+        wl_data = []
+        print "Translate wavelength with: %s, %s, %s, %s" \
+            % (c0, c1, c2, c3)
+
+        for x in range(self.pixel_count):
+            new_x = c0 + (c1 * x) + (c2 * x * x) + (c3 * x * x * x)
+            wl_data.append(new_x)
+
+        return wl_data
+
+
+    def get_line_pixel(self):
+        """ Return a test pattern of data over the range specified
+        during the assignment pixel count.
+        """
+        self.check_unassigned()
+
+        px = self.pixel_count
+        pixel_data = numpy.linspace(0, px-1, px)
+        return pixel_data
+
     def connect(self, vid=0x24aa, pid=0x0005):    
         """ Connect to the device assigned, regardless of the vid/pid.
         """
-        self.unassigned()
-        self._vid = vid
-        self._pid = pid
+        self.check_unassigned()
+
+        if self.is_connected:
+            raise(TypeError, "Already conected")
+
+        self.vid = vid
+        self.pid = pid
+        self.is_connected = True
         return True
 
-    def unassigned(self):
+    def disconnect(self):
+        """ Reset all variables, keep device assignment.
+        """
+        self.check_unassigned()
+        
+        if not self.is_connected:
+            raise(TypeError, "Already disconnected")
+    
+        self.is_connected = False
+        self.vid = None
+        self.pid = None
+        return True
+
+    def check_unassigned(self):
         """ Throw an exception to enforce the user to set a device
         assignment before usage.
         """
         if self._assign is None:
-            raise(ValueError, "Device is unassigned")
+            raise(ValueError, "Device is check_unassigned")
 
 
 class CameraUSB(object):
