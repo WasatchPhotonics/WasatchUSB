@@ -26,10 +26,12 @@ class SimulatedUSB(object):
         if assign_type == "Stroker785L":
             self.pixel_count = 1024
             self._assign = assign_type
+            self.serial_number = assign_type
        
         elif assign_type == "Stroker785M":
             self.pixel_count = 2048
             self._assign = assign_type
+            self.serial_number = assign_type
  
         if self._assign is None:
             raise(ValueError, "Unknown device type")
