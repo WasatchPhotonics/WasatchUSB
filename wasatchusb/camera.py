@@ -1,5 +1,42 @@
+""" camera - CameraUSB and SimulatedUSB devices for Wasatch Photonics.
+"""
 import usb
 import numpy
+
+class SimulatedUSB(object):
+    """ Provide a simulation interface designed to mock Wasatch
+    Photonics FX2, ARM, FX3 line scan cameras.
+    """
+    def __init__(self):
+        self._assign = None
+
+    def assign(self, assign_type):
+        """ If assignable type matches, permit the rest of the
+        simulation functions.
+        """
+        if assign_type == "Stroker785L":
+            self._assign = assign_type
+        
+        if self._assign is None:
+            raise(ValueError, "Unknown device type")
+
+        return True
+
+    def connect(self, vid=0x24aa, pid=0x0005):    
+        """ Connect to the device assigned, regardless of the vid/pid.
+        """
+        self.unassigned()
+        self._vid = vid
+        self._pid = pid
+        return True
+
+    def unassigned(self):
+        """ Throw an exception to enforce the user to set a device
+        assignment before usage.
+        """
+        if self._assign is None:
+            raise(ValueError, "Device is unassigned")
+
 
 class CameraUSB(object):
     """ Communicate with a Wasatch Photonics Stroker ARM USB board
