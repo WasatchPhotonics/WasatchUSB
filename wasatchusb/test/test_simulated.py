@@ -93,7 +93,7 @@ class Test(unittest.TestCase):
         coeff_dict = {'C0': '7.25405E+02',
                       'C1': '1.43880E-01',
                       'C2': '7.16617E-06',
-                      'C3': '-8.68137E-0'
+                      'C3': '-8.68137E-09'
                      }
 
         # Raises error when trying to update without assignment
@@ -103,17 +103,15 @@ class Test(unittest.TestCase):
 
         # Assign new coefficients
         self.assertTrue(sim.new_coefficients(coeff_dict))
-        return
 
-        self.assertEqual(sim.pixel_count, 2048)
         wavenum_axis, intensity_data = sim.get_line_wavenumber()
 
-        first_conv = "167.33"
-        last_conv = "837.76"
+        first_conv = "-1046.55"
+        last_conv = "2487.62"
         self.assertEqual("%05.2f" % wavenum_axis[0], first_conv)
         self.assertEqual("%05.2f" % wavenum_axis[-1], last_conv)
         self.assertEqual(intensity_data[0], 0)
-        self.assertEqual(intensity_data[2048], 2048)
+        self.assertEqual(intensity_data[2047], 2047)
 
 
 

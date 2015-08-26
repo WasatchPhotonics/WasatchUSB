@@ -64,12 +64,6 @@ class SimulatedUSB(object):
         self.linearity_coefficient_c1 = new_dict['C1']
         self.linearity_coefficient_c2 = new_dict['C2']
         self.linearity_coefficient_c3 = new_dict['C3']
-        c0 = self.linearity_coefficient_c0
-        c1 = self.linearity_coefficient_c1
-        c2 = self.linearity_coefficient_c2
-        c3 = self.linearity_coefficient_c3
-        print "Assign with: %s, %s, %s, %s" \
-            % (c0, c1, c2, c3)
         return True
 
     def translate_wavelength(self):
@@ -78,14 +72,14 @@ class SimulatedUSB(object):
         length.
         """
             
-        c0 = self.linearity_coefficient_c0
-        c1 = self.linearity_coefficient_c1
-        c2 = self.linearity_coefficient_c2
-        c3 = self.linearity_coefficient_c3
+        c0 = float(self.linearity_coefficient_c0)
+        c1 = float(self.linearity_coefficient_c1)
+        c2 = float(self.linearity_coefficient_c2)
+        c3 = float(self.linearity_coefficient_c3)
 
         wl_data = []
-        print "Translate wavelength with: %s, %s, %s, %s" \
-            % (c0, c1, c2, c3)
+        #print "Translate wavelength with: %s, %s, %s, %s" \
+            #% (c0, c1, c2, c3)
 
         for x in range(self.pixel_count):
             new_x = c0 + (c1 * x) + (c2 * x * x) + (c3 * x * x * x)
