@@ -1,6 +1,7 @@
 """ camera - CameraUSB and SimulatedUSB devices for Wasatch Photonics.
 """
 import usb
+import time
 import numpy
 
 class SimulatedUSB(object):
@@ -27,6 +28,7 @@ class SimulatedUSB(object):
             self.pixel_count = 1024
             self._assign = assign_type
             self.serial_number = assign_type
+            self.integration_time = 10
        
         elif assign_type == "Stroker785M":
             self.pixel_count = 2048
@@ -133,6 +135,25 @@ class SimulatedUSB(object):
         if self._assign is None:
             raise(ValueError, "Device is check_unassigned")
 
+    def set_integration_time(self, in_value):
+        self.integration_time = in_value
+        return True
+
+class RealisticSimulatedUSB(SimulatedUSB):
+    """ Same simualted data and other interface concepts, along with
+    delays of integration time for long acquisitions. 
+    """
+    def __init__(self):
+        super(RealisticSimulatedUSB, self).__init__()
+        
+    def get_line_pixel(self):
+        """ Get the simulated data immediately, then wait the required
+        time.
+        """
+        pixel_data = super(RealisticSimulatedUSB, self).get_line_pixel()
+        print "Waiting: %s" % self.integration_time
+        time.sleep(self.integration_time/1000)
+        return pixel_data
 
 class CameraUSB(object):
     """ Communicate with a Wasatch Photonics Stroker ARM USB board

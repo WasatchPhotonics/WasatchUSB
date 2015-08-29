@@ -6,8 +6,10 @@ any type of data desired.
 """
 
 import unittest
+import time
 
 from wasatchusb.camera import SimulatedUSB
+from wasatchusb.camera import RealisticSimulatedUSB
 
 class Test(unittest.TestCase):
     
@@ -113,7 +115,32 @@ class Test(unittest.TestCase):
         self.assertEqual(intensity_data[0], 0)
         self.assertEqual(intensity_data[2047], 2047)
 
+    def test_simulated_integration_times(self):
+        # Create a regular simulated device, trigger a long integration,
+        # expect it to return instantly
+        sim = SimulatedUSB()
+        self.assertTrue(sim.assign("Stroker785L"))
+        self.assertTrue(sim.set_integration_time(3000))
 
+        start_time = time.time()
+        pixel_data = sim.get_line_pixel()
+        end_time = time.time()
+
+        self.assertLess(end_time - start_time, 1)
+
+    def test_realistic_integration_times(self):
+        # Create a sleep-enabled simulated device, expect it to return
+        # sometime 
+        rel = RealisticSimulatedUSB()
+        self.assertTrue(rel.assign("Stroker785L"))
+        self.assertTrue(rel.set_integration_time(3000))
+         
+        start_time = time.time()
+        pixel_data = rel.get_line_pixel()
+        end_time = time.time()
+
+        self.assertLess(end_time - start_time, 3.1)
+        self.assertGreater(end_time - start_time, 3)
 
 if __name__ == "__main__":
     unittest.main()
