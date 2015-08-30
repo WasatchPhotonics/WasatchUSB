@@ -3,6 +3,8 @@
 import usb
 import time
 import numpy
+import Queue
+import threading
 
 class SimulatedUSB(object):
     """ Provide a simulation interface designed to mock Wasatch
@@ -154,6 +156,57 @@ class RealisticSimulatedUSB(SimulatedUSB):
         print "Waiting: %s" % self.integration_time
         time.sleep(self.integration_time/1000)
         return pixel_data
+
+class ThreadedUSB(RealisticSimulatedUSB):
+    """ Wraps around the realistic simulation object, and provides
+    responsivity during long integration time sleeps. Uses simple
+    threading and queue control.
+    """
+
+    def __init__(self):
+        super(ThreadedUSB, self).__init__()
+        self.data_queue = Queue.Queue(maxsize=1)
+
+    def start_acquire(self):
+        """ Start a new thread with the data queue. 
+        """
+        self.thr_usb = ThreadedDevice(self, self.data_queue)
+        return True
+  
+    def is_data_ready(self):
+        """ Look for a data item in the queue, return status.   
+        """
+        return self.data_queue.full()
+
+    def get_last_data(self):
+        """ Return an empty list, or the actual data from the queue if
+        available.
+        """ 
+        data_list = []
+        try:
+            data_list = self.data_queue.get_nowait()
+        except Queue.Empty as exc:
+            print "Empty queue exception"
+
+        return data_list
+
+
+class ThreadedDevice(threading.Thread):
+    """ Given a queue and the parents inherited simulated usb device
+    interface, issue the blocking device calls, and put the result on
+    the queue.
+    """
+    def __init__(self, device_object, data_queue):
+        super(ThreadedDevice, self).__init__()
+        self.data_queue = data_queue
+        self.device = device_object
+        self.start()
+
+    def run(self):
+        pixel_data = self.device.get_line_pixel()
+        self.data_queue.put(pixel_data)
+
+    
 
 class CameraUSB(object):
     """ Communicate with a Wasatch Photonics Stroker ARM USB board

@@ -10,6 +10,7 @@ import time
 
 from wasatchusb.camera import SimulatedUSB
 from wasatchusb.camera import RealisticSimulatedUSB
+from wasatchusb.camera import ThreadedUSB
 
 class Test(unittest.TestCase):
     
@@ -18,7 +19,6 @@ class Test(unittest.TestCase):
         self.pid = 0x0001
 
     def test_simulated_assign(self):
-        
         sim = SimulatedUSB()
 
         # This is the break in functionality in the api. If you attempt
@@ -141,6 +141,34 @@ class Test(unittest.TestCase):
 
         self.assertLess(end_time - start_time, 3.1)
         self.assertGreater(end_time - start_time, 3)
+
+    def test_threaded_realistic_integration_time(self):
+        # Call the threaded object start acquire, expect an immediate
+        # return
+        thr = ThreadedUSB()
+        self.assertTrue(thr.assign("Stroker785L"))
+
+        int_time = 3000
+        self.assertTrue(thr.set_integration_time(int_time))
+
+        start_time = time.time()
+        result = thr.start_acquire()
+        end_time = time.time()
+
+        self.assertTrue(result)
+        self.assertLess(end_time - start_time, 0.5)
+
+        # Quickly call the queue dumper, make sure it's empty
+        self.assertFalse(thr.is_data_ready())
+        pixel_data = thr.get_last_data()
+        self.assertEqual(pixel_data, [])
+        
+        # Local sleep of integration time, then call the queue dumper,
+        # make sure it has the pixel data.
+        time.sleep((int_time+1000) / 1000.0)
+        self.assertTrue(thr.is_data_ready())
+        pixel_data = thr.get_last_data()
+        self.assertEqual(len(pixel_data), 1024)
 
 if __name__ == "__main__":
     unittest.main()
