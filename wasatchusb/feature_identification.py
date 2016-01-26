@@ -110,3 +110,22 @@ class Device(object):
 
         serial_number = serial_number.replace("\x00", "")
         return serial_number
+
+    def get_integration_time(self):
+        """ Read the integration time stored on the device.
+        """
+        return None
+
+    def get_sensor_line_length(self):
+        """ The line length is encoded as a LSB two byte integer. Where a value
+        of 0, 4 is equivalent to 1024 pixels.
+        """
+        result = self.get_code(0x03)
+        line_length = (result[1] * 256) + result[0]
+        return line_length
+
+    def get_laser_availability(self):
+        """ Laser availability is a 1 or zero in the first byte of the response.
+        """
+        result = self.get_code(0x08)
+        return result[0]

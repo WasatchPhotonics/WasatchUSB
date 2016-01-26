@@ -68,3 +68,13 @@ class TestFeatureIdentification():
         assert serial_number == "S-00146"
 
 
+    def test_get_integration_time(self, device):
+        integration_time = device.get_integration_time()
+        assert integration_time == 10
+
+    def test_get_sensor_line_length(self, device):
+        assert device.get_sensor_line_length() == 1024
+
+    def test_get_laser_availability(self, device):
+        assert device.get_laser_availability() == 0
+
