@@ -80,6 +80,28 @@ class Device(object):
         return model_number
 
 
+    def send_code(self, FID_bmRequest):
+        """ Perform the control message transfer, return the extracted
+        value
+        """
+        FID_bmRequestType = 0x40 # host to device
+        FID_wIndex = 0           # current specification has all index 0
+        FID_wLength = ""
+        FID_wValue = 0
+
+        try:
+            result = self.device.ctrl_transfer(FID_bmRequestType,
+                                               FID_bmRequest,
+                                               FID_wValue,
+                                               FID_wIndex,
+                                               FID_wLength)
+        except Exception as exc:
+            log.critical("Problem with ctrl transfer: %s", exc)
+
+        log.debug("Raw result: [%s]", result)
+        return result
+
+
     def get_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
         """ Perform the control message transfer, return the extracted
         value
@@ -187,3 +209,14 @@ class Device(object):
                   % (result[3], result[2], result[1], result[0])
         return sw_code
 
+
+    def get_line(self):
+        """ Issue the "acquire" control message, then immediately read
+        back from the bulk endpoint.
+        """
+        result = self.send_code(0xAD)
+
+        line_data = self.device.read(0x82, 2048, 1000)
+        log.debug("Raw data: %s", line_data)
+        line_data = None
+        return line_data
