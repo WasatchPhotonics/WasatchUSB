@@ -168,7 +168,7 @@ class Device(object):
             elif bit_val == 1 and i == 6: gain = gain + 0.0078125
             elif bit_val == 1 and i == 7: gain = gain + 0.00390625
 
-        log.critical("Raw gain is: %s", gain)
+        log.debug("Raw gain is: %s", result)
 
         return gain
 
@@ -218,7 +218,10 @@ class Device(object):
         """
         result = self.send_code(0xAD)
 
-        data = self.device.read(0x82, 2048, timeout=1000)
+        line_buffer = 2048 # 1024 16bit pixels
+        if self.pid == 0x2000:
+            line_buffer = 1024 # 512 16bit pixels
+        data = self.device.read(0x82, line_buffer, timeout=1000)
         log.debug("Raw data: %s", data)
 
         try:

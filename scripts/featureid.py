@@ -28,7 +28,11 @@ def print_device():
                % (dev_count, item[0], item[1])
         dev_count += 1
 
-    device = feature_identification.Device()
+    last_device = dev_list.get_all()[-1]
+    last_pid = int(last_device[1], 16)
+    print "Connect to last device pid: %s" % last_pid
+    
+    device = feature_identification.Device(pid=last_pid)
     device.connect()
     print "Model:  %s" % device.get_model_number()
     print "Serial: %s" % device.get_serial_number()

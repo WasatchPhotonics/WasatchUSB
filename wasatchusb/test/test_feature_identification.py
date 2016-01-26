@@ -70,18 +70,27 @@ class TestFeatureIdentification():
         result = device.disconnect()
         assert result is True
 
+    def test_get_ingaas_model_number(self, ingaas_device):
+
+        model_number = ingaas_device.get_model_number()
+        assert model_number == "1064M"
+
     def test_get_model_number(self, device):
 
         model_number = device.get_model_number()
         assert model_number == "785IOC"
 
     @pytest.fixture
-    def device(self):
+    def device(self, pid=0x1000):
         from wasatchusb import feature_identification
-        device = feature_identification.Device()
+        device = feature_identification.Device(pid=pid)
         result = device.connect()
         assert result is True
         return device
+
+    @pytest.fixture
+    def ingaas_device(self, pid=0x2000):
+        return self.device(pid=pid)
 
     def test_get_serial_number(self, device):
         serial_number = device.get_serial_number()
@@ -97,6 +106,9 @@ class TestFeatureIdentification():
     def test_get_sensor_line_length(self, device):
         assert device.get_sensor_line_length() == 1024
 
+    def test_get_ingaas_sensor_line_length(self, ingaas_device):
+        assert ingaas_device.get_sensor_line_length() == 512
+
     def test_get_laser_availability(self, device):
         assert device.get_laser_availability() == 0
 
@@ -107,6 +119,16 @@ class TestFeatureIdentification():
     def test_get_single_line_of_data(self, device):
         result = device.get_line()
         assert len(result) == 1024
+        assert min(result) >= 10
+        assert max(result) <= 65535
+
+        average = sum(result) / len(result)
+        assert average >= 20
+
+
+    def test_get_ingaas_single_line_of_data(self, ingaas_device):
+        result = ingaas_device.get_line()
+        assert len(result) == 512
         assert min(result) >= 10
         assert max(result) <= 65535
 
