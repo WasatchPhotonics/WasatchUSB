@@ -78,3 +78,7 @@ class TestFeatureIdentification():
     def test_get_laser_availability(self, device):
         assert device.get_laser_availability() == 0
 
+    def test_get_standard_software_code(self, device):
+        result = device.get_standard_software_code()
+        assert result == "10.0.0.0"
+

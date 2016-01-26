@@ -71,7 +71,7 @@ class Device(object):
         """ Extract the appropriate field with a control message to the
         device.
         """
-        result = self.get_code(0x01)
+        result = self.get_upper_code(0x01)
         model_number = ""
         for letter in result[0:15]:
             model_number += chr(letter)
@@ -80,12 +80,11 @@ class Device(object):
         return model_number
 
 
-    def get_code(self, FID_wValue, FID_wLength=64):
+    def get_code(self, FID_bmRequest, FID_wValue, FID_wLength=64):
         """ Perform the control message transfer, return the extracted
         value
         """
         FID_bmRequestType = 0xC0 # device to host
-        FID_bmRequest = 0xFF     # upper area, content is wValue
         FID_wIndex = 0           # current specification has all index 0
 
         try:
@@ -100,10 +99,17 @@ class Device(object):
         log.debug("Raw result: [%s]", result)
         return result
 
+    def get_upper_code(self, FID_wValue):
+        """ Convenience function to wrap "upper area" bmRequest feature
+        identification code around the standard get code command.
+        """
+        return self.get_code(FID_bmRequest=0xFF, FID_wValue=FID_wValue)
+
     def get_serial_number(self):
         """ Return the serial number portion of the model description.
         """
-        result = self.get_code(0x01)
+        FID_bmRequest = 0xFF  # upper area, content is wValue
+        result = self.get_upper_code(0x01)
         serial_number = ""
         for letter in result[16:31]:
             serial_number += chr(letter)
@@ -120,12 +126,16 @@ class Device(object):
         """ The line length is encoded as a LSB two byte integer. Where a value
         of 0, 4 is equivalent to 1024 pixels.
         """
-        result = self.get_code(0x03)
+        result = self.get_upper_code(0x03)
         line_length = (result[1] * 256) + result[0]
         return line_length
 
     def get_laser_availability(self):
         """ Laser availability is a 1 or zero in the first byte of the response.
         """
-        result = self.get_code(0x08)
+        result = self.get_upper_code(0x08)
         return result[0]
+
+    def get_standard_software_code(self):
+        result = self.get_code(0x02)
+
