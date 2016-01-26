@@ -12,7 +12,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         # In real life, tests are on a variety of devices in different
         # power configurations. Turn on all the relays and assume one of
-        # them has an attached wasatch photoncis usb device
+        # them has an attached wasatch photonics usb device
         self.phd_relay = Relay()
         self.ensure_all_off(self.phd_relay)
         time.sleep(1)

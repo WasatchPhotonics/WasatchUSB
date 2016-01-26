@@ -5,3 +5,6 @@ python communication with a StrokerARMUSB board. These tests include
 communication with a Phidgets relay device, to place the device in a
 known power state.
 
+Feature identification is supported through the scripts/feature.py file.
+Run this program to dump the current configuration of any feature
+identification supporting device.

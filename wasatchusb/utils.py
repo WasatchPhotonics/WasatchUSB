@@ -20,13 +20,13 @@ class FindDevices(object):
                     local_serial = ld.getString(dev.iSerialNumber, 256)
                     return True, local_serial
 
-        return False, "serial_failure" 
-                
+        return False, "serial_failure"
+
     def list_usb(self, vid=0x24aa):
         #print "Show vendor devices: %s" % vid
 
         device_list = []
-        
+
         for bus in usb.busses():
             for device in bus.devices:
                 # iSerialNumber in this context is position, not value.
