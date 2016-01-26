@@ -39,6 +39,26 @@ class TestFeatureIdentification():
         assert result[0][0] == "0x24aa"
         assert result[0][1] == "0x1000"
 
+    def test_list_device_is_ingaas(self, dev_list):
+        log.critical("Make sure only ingaas 0x2000 is connected")
+
+        result = dev_list.get_all()
+        assert len(result) == 1
+        assert result[0][0] == "0x24aa"
+        assert result[0][1] == "0x2000"
+
+    def test_connect_ingaas_device_close_device(self):
+        log.critical("Expect an FX2 device connected")
+
+        from wasatchusb import feature_identification
+        device = feature_identification.Device(pid=0x2000)
+        result = device.connect()
+        assert result is True
+
+        result = device.disconnect()
+        assert result is True
+
+
     def test_connect_device_close_device(self):
         log.critical("Expect an FX2 device connected")
 
