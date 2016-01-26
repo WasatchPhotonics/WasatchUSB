@@ -45,6 +45,18 @@ class TestFeatureIdentification():
         from wasatchusb import feature_identification
         device = feature_identification.Device()
         result = device.connect()
-        assert result is not None
+        assert result is True
 
+        result = device.disconnect()
+        assert result is True
+
+    def test_get_model_number(self):
+
+        from wasatchusb import feature_identification
+        device = feature_identification.Device()
+        result = device.connect()
+        assert result is True
+
+        model_number = device.get_model_number()
+        assert model_number == "785IOC"
 

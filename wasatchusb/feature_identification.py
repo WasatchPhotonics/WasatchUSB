@@ -4,6 +4,7 @@ identification protocol devices from Wasatch Photonics.
 
 import usb
 import usb.core
+import usb.util
 
 import logging
 log = logging.getLogger(__name__)
@@ -31,57 +32,65 @@ class Device(object):
         log.debug("init")
         self.vid = vid
         self.pid = pid
+        self.device = None
 
     def connect(self):
         """ Attempt to connect to the specified device. Log any failures and
-        return None if there is a problem.
+        return False if there is a problem, otherwise return True.
         """
 
         device = usb.core.find(idVendor=self.vid, idProduct=self.pid)
         if device is None:
             log.critical("Can't find: %s, %s", (self.vid, self.pid))
-            return device
+            return False
 
         log.debug("Attempt to set configuration")
         try:
             result = device.set_configuration(1)
         except Exception as exc:
             log.warn("Failure in setConfiguration %s", exc)
-            return None
-
-        #try:
-            #result = device.claimInterface(0)
-        #except Exception as exc:
-            #log.warn("Failure in claimInterface: %s", exc)
-            #return None
-
-        return device
-
-    def device_disconnect(self):
-        if self.od <= 0:
-            #self.error_message = "Can't disconnect a non-open device"
-            return 0
+            return False
 
         try:
-            #TODO: actually close device
-            result = "fake"
-            #result = self.od.releaseInterface()
-            #self.log.info("released " + str(result) + " " + str( self.od))
-            if result != None:
-                self.error_message = "Cannot close device"
-                return 0
-        except:
-            self.log.warn("releaseInterface call fail: " + \
-                             str(sys.exc_info()))
-            pass
+            result = usb.util.claim_interface(device, 0)
+        except Exception as exc:
+            log.warn("Failure in claimInterface: %s", exc)
+            return None
 
-        #self.log.info("out pass ")
-        self.my_vid = -1
-        self.my_pid = -1
+        self.device = device
+        return True
 
-        # Expect the release to fail on unplug, if you issue a disconnect above
-        # that fails for different reason that's a ret code 0, otherwise return
-        # a 1
+    def disconnect(self):
+        """ Function stub for historical matching of expected explicity
+        connect and disconnect.
+        """
+        log.info("Placeholder disconnect")
+        return True
 
-        return 1
+    def get_model_number(self):
+        """ Extract the appropriate field with a control message to the
+        device.
+        """
+
+#            result = self.od.controlMsg(self.DEVICE2HOST, 
+#                                        self.CMD_GET_LASER,
+#                                        1, 0, 0, self.timeout)
+   
+        try:
+            # bmRequestType, bmRequest, wValue, wIndex
+            result = self.device.ctrl_transfer(0xC0, 0xFF, 0x01, 0, 64)
+        except Exception as exc:
+            log.critical("Problem with ctrl transfer: %s", exc)
+
+        log.info("Raw result: [%s]", result)
+        model_number = result[0:15]
+        log.debug("Raw model: [%r]", model_number)
+
+        model_number = ""
+        for letter in result[0:15]:
+            model_number += chr(letter)
+        #serial_number = result[16:31].replace("\x00", "")
+        model_number = model_number.replace("\x00", "")
+        return model_number
+
 
