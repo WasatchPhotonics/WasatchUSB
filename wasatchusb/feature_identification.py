@@ -1,5 +1,5 @@
 """ Interface wrapper around libusb and cypress drivers to show feature
-identification protocol devices from Wasatch Photonics.import
+identification protocol devices from Wasatch Photonics.
 """
 
 import usb
