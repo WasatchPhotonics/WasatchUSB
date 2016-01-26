@@ -3,6 +3,7 @@ identification protocol devices from Wasatch Photonics.
 """
 
 import usb
+import usb.core
 
 import logging
 log = logging.getLogger(__name__)
@@ -36,29 +37,23 @@ class Device(object):
         return None if there is a problem.
         """
 
-        device = None
-        try:
-            for bus in usb.busses():
-                for dev in bus.devices:
-                    if dev.idVendor == self.vid and  \
-                    dev.idProduct == self.pid:
-                        log.info("attempt open")
-                        device = dev.open()
-
-        except Exception as exc:
-            log.warn("Failure in connect %s", exc)
+        device = usb.core.find(idVendor=self.vid, idProduct=self.pid)
+        if device is None:
+            log.critical("Can't find: %s, %s", (self.vid, self.pid))
             return device
 
         log.debug("Attempt to set configuration")
         try:
-            result = device.setConfiguration(1)
+            result = device.set_configuration(1)
         except Exception as exc:
             log.warn("Failure in setConfiguration %s", exc)
+            return None
 
-        try:
-            result = device.claimInterface(0)
-        except Exception as exc:
-            log.warn("Failure in claimInterface: %s", exc)
+        #try:
+            #result = device.claimInterface(0)
+        #except Exception as exc:
+            #log.warn("Failure in claimInterface: %s", exc)
+            #return None
 
         return device
 
