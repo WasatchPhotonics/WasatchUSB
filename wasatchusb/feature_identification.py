@@ -144,7 +144,9 @@ class Device(object):
         """
         result = self.get_code(0xBF)
 
-        return result
+        curr_time = (result[2] * 0x10000) + (result[1] * 0x100) + result[0]
+
+        return curr_time
 
 
     def get_ccd_gain(self):
@@ -216,7 +218,7 @@ class Device(object):
         """
         result = self.send_code(0xAD)
 
-        data = self.device.read(0x82, 2048, 1000)
+        data = self.device.read(0x82, 2048, timeout=1000)
         log.debug("Raw data: %s", data)
 
         try:
