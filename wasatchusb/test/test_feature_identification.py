@@ -93,8 +93,3 @@ class TestFeatureIdentification():
         average = sum(result) / len(result)
         assert average >= 20
 
-    def test_graph(self):
-        from sympy import symbols
-        from sympy.plotting import textplot
-        x = symbols('x')
-        textplot(x**2,0,5)

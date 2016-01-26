@@ -216,7 +216,13 @@ class Device(object):
         """
         result = self.send_code(0xAD)
 
-        line_data = self.device.read(0x82, 2048, 1000)
-        log.debug("Raw data: %s", line_data)
-        line_data = None
-        return line_data
+        data = self.device.read(0x82, 2048, 1000)
+        log.debug("Raw data: %s", data)
+
+        try:
+            data = [i + 256 * j for i, j in zip(data[::2], data[1::2])]
+        except Exception as exc:
+            log.critical("Failure in data unpack: %s", exc)
+            data = None
+
+        return data
