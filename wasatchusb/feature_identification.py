@@ -80,7 +80,7 @@ class Device(object):
         return model_number
 
 
-    def get_code(self, FID_bmRequest, FID_wValue, FID_wLength=64):
+    def get_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
         """ Perform the control message transfer, return the extracted
         value
         """
@@ -137,5 +137,12 @@ class Device(object):
         return result[0]
 
     def get_standard_software_code(self):
-        result = self.get_code(0x02)
+        """ 0xC0 is not to be confused with the device to host specification in
+        the control message. This is a vendor defined opcode for returning the
+        software information.
+        """
+        result = self.get_code(0xC0)
+        sw_code = "%d.%d.%d.%d" \
+                  % (result[3], result[2], result[1], result[0])
+        return sw_code
 
