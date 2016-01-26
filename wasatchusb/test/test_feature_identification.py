@@ -69,8 +69,10 @@ class TestFeatureIdentification():
 
 
     def test_get_integration_time(self, device):
-        integration_time = device.get_integration_time()
-        assert integration_time == 10
+        assert device.get_integration_time() == 0
+
+    def test_get_gain(self, device):
+        assert device.get_ccd_gain() == 1.296875
 
     def test_get_sensor_line_length(self, device):
         assert device.get_sensor_line_length() == 1024

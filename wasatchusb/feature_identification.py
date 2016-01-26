@@ -120,7 +120,48 @@ class Device(object):
     def get_integration_time(self):
         """ Read the integration time stored on the device.
         """
-        return None
+        result = self.get_code(0xBF)
+
+        return result
+
+
+    def get_ccd_gain(self):
+        """ Read the device stored gain.  Convert from binary wasatch format.
+        First bytes is binary encoded: 0 = 1/2, 1 = 1/4, 2 = 1/8 etc.  second
+        byte is the part to the left of the decimal, so 231 is 1e7 is 1.90234375
+        """
+        result = self.get_code(0xC5)
+        gain = result[1]
+        start_byte = str(result[0])
+        for i in range(8):
+            bit_val = self.bit_from_string(start_byte, i)
+            if   bit_val == 1 and i == 0: gain = gain + 0.5
+            elif bit_val == 1 and i == 1: gain = gain + 0.25
+            elif bit_val == 1 and i == 2: gain = gain + 0.125
+            elif bit_val == 1 and i == 3: gain = gain + 0.0625
+            elif bit_val == 1 and i == 4: gain = gain + 0.03125
+            elif bit_val == 1 and i == 5: gain = gain + 0.015625
+            elif bit_val == 1 and i == 6: gain = gain + 0.0078125
+            elif bit_val == 1 and i == 7: gain = gain + 0.00390625
+
+        log.critical("Raw gain is: %s", gain)
+
+        return gain
+
+    def bit_from_string(self, string, index):
+        """ Given a string of 1's and 0's, look through each ordinal position
+        and return a 1 if it has a one. Otherwise return zero.
+        """
+        i, j = divmod(index, 8)
+
+        # Uncomment this if you want the high-order bit first
+        #j = 8 - j
+
+        if ord(string[i]) & (1 << j):
+            return 1
+
+        return 0
+
 
     def get_sensor_line_length(self):
         """ The line length is encoded as a LSB two byte integer. Where a value
