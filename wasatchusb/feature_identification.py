@@ -71,26 +71,42 @@ class Device(object):
         """ Extract the appropriate field with a control message to the
         device.
         """
-
-#            result = self.od.controlMsg(self.DEVICE2HOST, 
-#                                        self.CMD_GET_LASER,
-#                                        1, 0, 0, self.timeout)
-   
-        try:
-            # bmRequestType, bmRequest, wValue, wIndex
-            result = self.device.ctrl_transfer(0xC0, 0xFF, 0x01, 0, 64)
-        except Exception as exc:
-            log.critical("Problem with ctrl transfer: %s", exc)
-
-        log.info("Raw result: [%s]", result)
-        model_number = result[0:15]
-        log.debug("Raw model: [%r]", model_number)
-
+        result = self.get_code(0x01)
         model_number = ""
         for letter in result[0:15]:
             model_number += chr(letter)
-        #serial_number = result[16:31].replace("\x00", "")
+
         model_number = model_number.replace("\x00", "")
         return model_number
 
 
+    def get_code(self, FID_wValue, FID_wLength=64):
+        """ Perform the control message transfer, return the extracted
+        value
+        """
+        FID_bmRequestType = 0xC0 # device to host
+        FID_bmRequest = 0xFF     # upper area, content is wValue
+        FID_wIndex = 0           # current specification has all index 0
+
+        try:
+            result = self.device.ctrl_transfer(FID_bmRequestType,
+                                               FID_bmRequest,
+                                               FID_wValue,
+                                               FID_wIndex,
+                                               FID_wLength)
+        except Exception as exc:
+            log.critical("Problem with ctrl transfer: %s", exc)
+
+        log.debug("Raw result: [%s]", result)
+        return result
+
+    def get_serial_number(self):
+        """ Return the serial number portion of the model description.
+        """
+        result = self.get_code(0x01)
+        serial_number = ""
+        for letter in result[16:31]:
+            serial_number += chr(letter)
+
+        serial_number = serial_number.replace("\x00", "")
+        return serial_number

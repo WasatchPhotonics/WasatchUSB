@@ -50,13 +50,21 @@ class TestFeatureIdentification():
         result = device.disconnect()
         assert result is True
 
-    def test_get_model_number(self):
+    def test_get_model_number(self, device):
 
+        model_number = device.get_model_number()
+        assert model_number == "785IOC"
+
+    @pytest.fixture
+    def device(self):
         from wasatchusb import feature_identification
         device = feature_identification.Device()
         result = device.connect()
         assert result is True
+        return device
 
-        model_number = device.get_model_number()
-        assert model_number == "785IOC"
+    def test_get_serial_number(self, device):
+        serial_number = device.get_serial_number()
+        assert serial_number == "S-00146"
+
 
