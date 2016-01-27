@@ -6,7 +6,7 @@ information of any device connected.
 import sys
 import logging
 log = logging.getLogger()
-strm = logging.StreamHandler(sys.stdout)
+strm = logging.StreamHandler(sys.stderr)
 log.addHandler(strm)
 log.setLevel(logging.WARN)
 
@@ -21,6 +21,9 @@ def print_device():
 
     dev_list = feature_identification.ListDevices()
     result = dev_list.get_all()
+    if result == []:
+        print "No devices found!"
+        sys.exit(1)
 
     dev_count = 0
     for item in dev_list.get_all():
