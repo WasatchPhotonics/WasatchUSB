@@ -24,7 +24,7 @@ WasatchUSB\libusb_drivers\ directory.
 
 Open a command prompt, and run:
 
-    cd \<projects\>\WasatchUSB
+    cd <projects>\WasatchUSB
     python scripts\featureid.py
 
 You will see output similar to:
