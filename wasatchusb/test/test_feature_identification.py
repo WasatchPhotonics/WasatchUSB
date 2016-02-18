@@ -135,3 +135,8 @@ class TestFeatureIdentification():
         average = sum(result) / len(result)
         assert average >= 20
 
+    def test_ingaas_pid_2000_set_integration_time(self, ingaas_device):
+        # device defaults to 1 on power up
+        assert ingaas_device.get_integration_time() == 1
+        ingaas_device.set_integration_time(100)
+        assert ingaas_device.get_integration_time() == 100

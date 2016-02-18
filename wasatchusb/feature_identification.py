@@ -80,14 +80,13 @@ class Device(object):
         return model_number
 
 
-    def send_code(self, FID_bmRequest):
+    def send_code(self, FID_bmRequest, FID_wValue=0):
         """ Perform the control message transfer, return the extracted
         value
         """
         FID_bmRequestType = 0x40 # host to device
         FID_wIndex = 0           # current specification has all index 0
         FID_wLength = ""
-        FID_wValue = 0
 
         try:
             result = self.device.ctrl_transfer(FID_bmRequestType,
@@ -231,3 +230,13 @@ class Device(object):
             data = None
 
         return data
+
+    def set_integration_time(self, int_time):
+        """ Send the updated integration time in a control message to the device.
+        """
+
+        log.debug("Send integration time: %s", int_time)
+        result = self.send_code(0xB2, int_time)
+        return result
+
+
