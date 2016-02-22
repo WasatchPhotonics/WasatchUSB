@@ -40,6 +40,7 @@ def print_device():
     print "Model:  %s" % device.get_model_number()
     print "Serial: %s" % device.get_serial_number()
     print "SWCode: %s" % device.get_standard_software_code()
+    print "FPGARev: %s" % device.get_fpga_revision()
     print "Gain:     %s" % device.get_ccd_gain()
     print "Int Time: %s" % device.get_integration_time()
     print "Laser Avail: %s" % device.get_laser_availability()
