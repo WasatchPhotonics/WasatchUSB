@@ -210,6 +210,24 @@ class Device(object):
                   % (result[3], result[2], result[1], result[0])
         return sw_code
 
+    def get_fpga_revision(self):
+        """ The version of the FPGA code read from the device. First
+        three bytes plus a hyphen is the major version, then last three
+        bytes is the minor.
+        """
+        result = self.get_code(0xB4)
+
+
+        chr_fpga_suffix = "%s%s%s" \
+                          % (chr(result[4]), chr(result[5]),
+                             chr(result[6]))
+
+        chr_fpga_prefix = "%s%s%s%s" \
+                          % (chr(result[0]), chr(result[1]),
+                             chr(result[2]), chr(result[3]))
+
+        return "%s%s" % (chr_fpga_prefix, chr_fpga_suffix)
+
 
     def get_line(self):
         """ Issue the "acquire" control message, then immediately read

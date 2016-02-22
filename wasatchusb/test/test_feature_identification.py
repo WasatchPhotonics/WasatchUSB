@@ -116,6 +116,11 @@ class TestFeatureIdentification():
         result = device.get_standard_software_code()
         assert result == "10.0.0.0"
 
+    def test_get_fpga_revision(self, ingaas_device):
+        result = ingaas_device.get_fpga_revision()
+        assert result == "008-003"
+
+
     def test_get_single_line_of_data(self, device):
         result = device.get_line()
         assert len(result) == 1024
