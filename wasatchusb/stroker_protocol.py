@@ -5,6 +5,7 @@ https://en.wikipedia.org/wiki/Stroker_kit
 """
 
 import usb
+import math
 
 import logging
 log = logging.getLogger(__name__)
@@ -273,20 +274,22 @@ class StrokerProtocolDevice(object):
         except Exction as exc:
             log.critical("Faulre reading laser temperature: %s", exc)
             return result
+            
+        log.critical("Plain adc: %s", result)
 
         try:
-            adc_value  = float(result[0], + (result[1] * 256))
+            adc_value  = float(result[0] + (result[1] * 256))
             voltage    = float((adc_value / 4096.0) * 2.5)
             resistance = 21450 * voltage
             resistance = resistance / (2.5 - voltage)
             logVal     = math.log( resistance / 10000 )
             insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
             tempc      = float( (3977.0 / insideMain) -273.0 )
-            return 1, tempc
+            result = tempc
 
         except Exception as exc:
             log.critical("Failure processing laser temperature: %s",
                          exc)
             return -173 # clearly less invalid 
 
-        return tempc
+        return result
