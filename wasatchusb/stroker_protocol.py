@@ -304,7 +304,7 @@ class StrokerProtocolDevice(object):
         result = -273 # The clearly invalid value
 
         try:
-            result = self.get_sp_code(0xD5)
+            result = self.get_sp_code(0xD7)
         except Exction as exc:
             log.critical("Failure reading temperature: %s", exc)
             return result
@@ -312,14 +312,15 @@ class StrokerProtocolDevice(object):
         log.critical("Plain adc: %s", result)
 
         try:
-            adc_value  = float(result[0] + (result[1] * 256))
+            adc_value  = float(result[1] + (result[0] * 256))
             voltage    = float((adc_value / 4096.0) * 1.5)
+            tempc = 0.01
             resistance = 10000 * voltage
-            resistance = resistance / (2.0 - voltage)
+            resistance = resistance / (2 - voltage)
             logVal     = math.log( resistance / 10000 )
             insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
             tempc      = float( (3977.0 / insideMain) -273.0 )
-            result = tempc
+            result     = tempc
 
         except Exception as exc:
             log.critical("Failure processing laser temperature: %s",
