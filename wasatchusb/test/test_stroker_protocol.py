@@ -86,3 +86,8 @@ class TestStrokerProtocol():
         assert device.get_laser_enable() == 0
         device.set_laser_enable(1) 
         assert device.get_laser_enable() == 1
+        device.set_laser_enable(0) 
+
+    def test_force_laser_off(self, device):
+        # convenience function to ensure the laser is off
+        device.set_laser_enable(0) 
