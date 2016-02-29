@@ -272,7 +272,7 @@ class StrokerProtocolDevice(object):
         try:
             result = self.get_sp_code(0xD5)
         except Exction as exc:
-            log.critical("Faulre reading laser temperature: %s", exc)
+            log.critical("Failure reading temperature: %s", exc)
             return result
             
         log.critical("Plain adc: %s", result)
@@ -282,6 +282,40 @@ class StrokerProtocolDevice(object):
             voltage    = float((adc_value / 4096.0) * 2.5)
             resistance = 21450 * voltage
             resistance = resistance / (2.5 - voltage)
+            logVal     = math.log( resistance / 10000 )
+            insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
+            tempc      = float( (3977.0 / insideMain) -273.0 )
+            result = tempc
+
+        except Exception as exc:
+            log.critical("Failure processing laser temperature: %s",
+                         exc)
+            return -173 # clearly less invalid 
+
+        return result
+
+
+    def get_ccd_temperature(self):
+        """ Read the Analog to Digital conversion value from the device.
+        Apply formula to convert AD value to temperature, return raw
+        temperature value.
+        """
+
+        result = -273 # The clearly invalid value
+
+        try:
+            result = self.get_sp_code(0xD5)
+        except Exction as exc:
+            log.critical("Failure reading temperature: %s", exc)
+            return result
+            
+        log.critical("Plain adc: %s", result)
+
+        try:
+            adc_value  = float(result[0] + (result[1] * 256))
+            voltage    = float((adc_value / 4096.0) * 1.5)
+            resistance = 10000 * voltage
+            resistance = resistance / (2.0 - voltage)
             logVal     = math.log( resistance / 10000 )
             insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
             tempc      = float( (3977.0 / insideMain) -273.0 )
