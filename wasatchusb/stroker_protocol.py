@@ -101,7 +101,7 @@ class StrokerProtocolDevice(object):
         return result
 
 
-    def get_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
+    def get_sp_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
         """ Perform the control message transfer, return the extracted
         value
         """
@@ -124,7 +124,7 @@ class StrokerProtocolDevice(object):
         """ Convenience function to wrap "upper area" bmRequest feature
         identification code around the standard get code command.
         """
-        return self.get_code(FID_bmRequest=0xFF, FID_wValue=FID_wValue)
+        return self.get_sp_code(FID_bmRequest=0xFF, FID_wValue=FID_wValue)
 
 
     def get_serial_number(self):
@@ -143,10 +143,11 @@ class StrokerProtocolDevice(object):
     def get_integration_time(self):
         """ Read the integration time stored on the device.
         """
-        result = self.get_code(0xBF)
+        result = self.get_sp_code(0xBF)
 
         curr_time = (result[2] * 0x10000) + (result[1] * 0x100) + result[0]
 
+        log.critical("Integration time: %s", curr_time)
         return curr_time
 
 
@@ -155,7 +156,7 @@ class StrokerProtocolDevice(object):
         First bytes is binary encoded: 0 = 1/2, 1 = 1/4, 2 = 1/8 etc.  second
         byte is the part to the left of the decimal, so 231 is 1e7 is 1.90234375
         """
-        result = self.get_code(0xC5)
+        result = self.get_sp_code(0xC5)
         gain = result[1]
         start_byte = str(result[0])
         for i in range(8):
@@ -207,7 +208,7 @@ class StrokerProtocolDevice(object):
         the control message. This is a vendor defined opcode for returning the
         software information.
         """
-        result = self.get_code(0xC0)
+        result = self.get_sp_code(0xC0)
         sw_code = "%d.%d.%d.%d" \
                   % (result[3], result[2], result[1], result[0])
         return sw_code
@@ -217,7 +218,7 @@ class StrokerProtocolDevice(object):
         three bytes plus a hyphen is the major version, then last three
         bytes is the minor.
         """
-        result = self.get_code(0xB4)
+        result = self.get_sp_code(0xB4)
 
 
         chr_fpga_suffix = "%s%s%s" \
@@ -260,3 +261,32 @@ class StrokerProtocolDevice(object):
         return result
 
 
+    def get_laser_temperature(self):
+        """ Read the Analog to Digital conversion value from the device.
+        Apply formula to convert AD value to temperature, return raw
+        temperature value.
+        """
+        result = -273 # The clearly invalid value
+
+        try:
+            result = self.get_sp_code(0xD5)
+        except Exction as exc:
+            log.critical("Faulre reading laser temperature: %s", exc)
+            return result
+
+        try:
+            adc_value  = float(result[0], + (result[1] * 256))
+            voltage    = float((adc_value / 4096.0) * 2.5)
+            resistance = 21450 * voltage
+            resistance = resistance / (2.5 - voltage)
+            logVal     = math.log( resistance / 10000 )
+            insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
+            tempc      = float( (3977.0 / insideMain) -273.0 )
+            return 1, tempc
+
+        except Exception as exc:
+            log.critical("Failure processing laser temperature: %s",
+                         exc)
+            return -173 # clearly less invalid 
+
+        return tempc

@@ -65,7 +65,15 @@ class TestStrokerProtocol():
         serial_number = device.get_serial_number()
         assert serial_number == "MTI-000B5"
 
-
     def test_get_integration_time(self, device):
         assert device.get_integration_time() == 0
 
+    def test_stroker_protocol_set_integration_time(self, device):
+        # device defaults to 0 on power up
+        assert device.get_integration_time() == 0
+        device.set_integration_time(100)
+        assert device.get_integration_time() == 100
+
+    def test_get_laser_temperature(self, device):
+        assert device.get_laser_temperature() >= 10.0
+        assert device.get_laser_temperature() <= 60.0
