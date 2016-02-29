@@ -82,3 +82,7 @@ class TestStrokerProtocol():
         assert device.get_ccd_temperature() >= 1.0
         assert device.get_ccd_temperature() <= 90.0
 
+    def test_set_laser_enable(self, device):
+        assert device.get_laser_enable() == 0
+        device.set_laser_enable(1) 
+        assert device.get_laser_enable() == 1

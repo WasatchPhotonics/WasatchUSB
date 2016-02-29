@@ -121,6 +121,27 @@ class StrokerProtocolDevice(object):
         log.debug("Raw result: [%s]", result)
         return result
 
+    def send_sp_code(self, FID_bmRequest, FID_wValue=0):
+        """ Perform the control message transfer, return the extracted
+        value
+        """
+        FID_bmRequestType = 0x40 # host to device
+        FID_wIndex = 0           # current specification has all index 0
+        FID_wLength = ""
+
+        try:
+            result = self.device.ctrl_transfer(FID_bmRequestType,
+                                               FID_bmRequest,
+                                               FID_wValue,
+                                               FID_wIndex,
+                                               FID_wLength)
+        except Exception as exc:
+            log.critical("Problem with ctrl transfer: %s", exc)
+
+        log.debug("Raw result: [%s]", result)
+        return result
+
+
     def get_upper_code(self, FID_wValue):
         """ Convenience function to wrap "upper area" bmRequest feature
         identification code around the standard get code command.
@@ -275,7 +296,7 @@ class StrokerProtocolDevice(object):
             log.critical("Failure reading temperature: %s", exc)
             return result
             
-        log.critical("Plain adc: %s", result)
+        log.debug("Plain adc: %s", result)
 
         try:
             adc_value  = float(result[0] + (result[1] * 256))
@@ -309,7 +330,7 @@ class StrokerProtocolDevice(object):
             log.critical("Failure reading temperature: %s", exc)
             return result
             
-        log.critical("Plain adc: %s", result)
+        log.debug("Plain adc: %s", result)
 
         try:
             adc_value  = float(result[1] + (result[0] * 256))
@@ -328,3 +349,19 @@ class StrokerProtocolDevice(object):
             return -173 # clearly less invalid 
 
         return result
+
+    def get_laser_enable(self):
+        """ Read the laser enable status from the device.
+        """
+        result = self.get_sp_code(0xE2)
+        return result[0]
+
+    def set_laser_enable(self, value=0):
+        """ Write one for enable, zero for disable of laser on the
+        device.  
+        """
+        log.debug("Send laser enable: %s", value)
+        result = self.send_code(0xBE, value)
+        return result
+
+
