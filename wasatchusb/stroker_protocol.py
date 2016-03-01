@@ -40,7 +40,13 @@ class StrokerProtocolDevice(object):
         return False if there is a problem, otherwise return True.
         """
 
-        device = usb.core.find(idVendor=self.vid, idProduct=self.pid)
+        try:
+            device = usb.core.find(idVendor=self.vid, idProduct=self.pid)
+        except Exception as exc:
+            log.critical("Exception in find: %s", exc)
+            log.info("Is the device available with libusb?")
+            return False
+
         if device is None:
             log.critical("Can't find: %s, %s" % (self.vid, self.pid))
             return False
@@ -154,7 +160,7 @@ class StrokerProtocolDevice(object):
         """
         serial = "Unavailable"
         try:
-            serial = usb.util.get_string(self.device, 
+            serial = usb.util.get_string(self.device,
                                          self.device.iSerialNumber, 256)
         except Exception as exc:
             log.warn("Failure to read serial: %s", exc)
@@ -295,7 +301,7 @@ class StrokerProtocolDevice(object):
         except Exction as exc:
             log.critical("Failure reading temperature: %s", exc)
             return result
-            
+
         log.debug("Plain adc: %s", result)
 
         try:
@@ -311,7 +317,7 @@ class StrokerProtocolDevice(object):
         except Exception as exc:
             log.critical("Failure processing laser temperature: %s",
                          exc)
-            return -173 # clearly less invalid 
+            return -173 # clearly less invalid
 
         return result
 
@@ -329,7 +335,7 @@ class StrokerProtocolDevice(object):
         except Exction as exc:
             log.critical("Failure reading temperature: %s", exc)
             return result
-            
+
         log.debug("Plain adc: %s", result)
 
         try:
@@ -346,7 +352,7 @@ class StrokerProtocolDevice(object):
         except Exception as exc:
             log.critical("Failure processing laser temperature: %s",
                          exc)
-            return -173 # clearly less invalid 
+            return -173 # clearly less invalid
 
         return result
 
@@ -358,7 +364,7 @@ class StrokerProtocolDevice(object):
 
     def set_laser_enable(self, value=0):
         """ Write one for enable, zero for disable of laser on the
-        device.  
+        device.
         """
         log.debug("Send laser enable: %s", value)
         result = self.send_code(0xBE, value)
