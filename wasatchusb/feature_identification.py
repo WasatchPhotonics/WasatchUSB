@@ -88,6 +88,7 @@ class Device(object):
         FID_wIndex = 0           # current specification has all index 0
         FID_wLength = ""
 
+        result = None
         try:
             result = self.device.ctrl_transfer(FID_bmRequestType,
                                                FID_bmRequest,
@@ -108,6 +109,7 @@ class Device(object):
         FID_bmRequestType = 0xC0 # device to host
         FID_wIndex = 0           # current specification has all index 0
 
+        result = None
         try:
             result = self.device.ctrl_transfer(FID_bmRequestType,
                                                FID_bmRequest,
@@ -233,7 +235,17 @@ class Device(object):
         """ Issue the "acquire" control message, then immediately read
         back from the bulk endpoint.
         """
-        result = self.send_code(0xAD)
+
+        # Feature identification is supposed to fix this ugliness.
+        # Feature identification is supposed to not cause a device
+        # lockup if a valid portion of the protocol is sent to the
+        # device.
+        if self.pid != 0x4000:
+            result = self.send_code(0xAD)
+        else:
+            log.debug("Not sending 0XAD trigger to device (ARM)")
+            pass
+            
 
         line_buffer = 2048 # 1024 16bit pixels
         if self.pid == 0x2000:

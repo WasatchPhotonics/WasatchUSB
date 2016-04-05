@@ -47,6 +47,26 @@ class TestFeatureIdentification():
         assert result[0][0] == "0x24aa"
         assert result[0][1] == "0x2000"
 
+    def test_list_device_is_arm(self, dev_list):
+        log.critical("Make sure only arm 0x4000 is connected")
+
+        result = dev_list.get_all()
+        assert len(result) == 1
+        assert result[0][0] == "0x24aa"
+        assert result[0][1] == "0x4000"
+
+    def test_connect_arm_device_close_device(self):
+        log.critical("Expect an ARM device connected")
+
+        from wasatchusb import feature_identification
+        device = feature_identification.Device(pid=0x4000)
+        result = device.connect()
+        assert result is True
+
+        result = device.disconnect()
+        assert result is True
+
+
     def test_connect_ingaas_device_close_device(self):
         log.critical("Expect an FX2 device connected")
 
@@ -80,6 +100,11 @@ class TestFeatureIdentification():
         model_number = device.get_model_number()
         assert model_number == "785IOC"
 
+    def test_get_arm_model_number(self, arm_device):
+
+        model_number = arm_device.get_model_number()
+        assert model_number == "785LC"
+
     @pytest.fixture
     def device(self, pid=0x1000):
         from wasatchusb import feature_identification
@@ -90,6 +115,10 @@ class TestFeatureIdentification():
 
     @pytest.fixture
     def ingaas_device(self, pid=0x2000):
+        return self.device(pid=pid)
+
+    @pytest.fixture
+    def arm_device(self, pid=0x4000):
         return self.device(pid=pid)
 
     def test_get_serial_number(self, device):
@@ -145,3 +174,21 @@ class TestFeatureIdentification():
         assert ingaas_device.get_integration_time() == 1
         ingaas_device.set_integration_time(100)
         assert ingaas_device.get_integration_time() == 100
+
+    def test_get_arm_single_line_of_data(self, arm_device):
+        result = arm_device.get_line()
+        assert len(result) == 1024
+        assert min(result) >= 10
+        assert max(result) <= 65535
+
+        average = sum(result) / len(result)
+        assert average >= 20
+
+    def test_get_arm_integration_time(self, arm_device):
+        assert arm_device.get_integration_time() == 0
+
+    def test_arm_pid_4000_set_integration_time(self, arm_device):
+        # device defaults to 0 on power up
+        assert arm_device.get_integration_time() == 0
+        arm_device.set_integration_time(100)
+        assert arm_device.get_integration_time() == 100
