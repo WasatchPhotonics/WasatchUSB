@@ -59,40 +59,10 @@ def print_device():
     print "Min: %s Max: %s Avg: %s" \
             % (min(data), max(data), avg_data)
 
-
-    with open("xs.txt", "wb") as OUT_FILE:
-        for x_item in range(0, len(data)):
-            OUT_FILE.write("%s\n" % x_item)
-
+    step_size = len(data) / 80
     with open("ys.txt", "wb") as OUT_FILE:
-        for y_item in data:
+        for y_item in data[0::step_size]:
             OUT_FILE.write("%s\n" % y_item)
-    #print "\n".join(map(str, data))
-    #print "\n".join(map(str, range(0,len(data))))
-    #plot_scatter(f=None, xs="xs.txt", ys="ys.txt", size=20, pch="x",
-            #colour="blue", title="data")
-
-
-    minimum_val = min(data)
-    zero_base_data = []
-    zero_base_data[:] = [x - minimum_val for x in data]
-    #from sparkline import sparkitize
-    #step_size = len(zero_base_data) / 80
-    #print sparkitize(zero_base_data[0::step_size])
-#
-    #print ""
-    #from sparkblocks import spark
-    #print(spark(zero_base_data[0::step_size]))
-#
-    #print ""
-    #one_base_data = []
-    #one_base_data[:] = [x - minimum_val +1 for x in data]
-    #print(spark(one_base_data[0::step_size]))
-#
-    #print ""
-    #from sparkback import *
-    #print_ansi_spark(scale_data(data[0::step_size], ansi_ticks))
-
 
     parser = argparse.ArgumentParser(
         description=(
@@ -112,7 +82,7 @@ def print_device():
     option.batch = False
     option.function = None
     option.legend = True
-    option.encoding = ''
+    option.encoding = 'utf-8'
     option.color = True
     option.palette = "default"
 
