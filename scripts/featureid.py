@@ -88,11 +88,16 @@ def print_device():
 
     option.size = Point((option.width, option.height))
 
-    engine = VerticalBarGraph(option.size, option)
+    points = []
+    values = []
+    clipped_data = data[0::step_size]
+    for item in range(len(clipped_data)):
+        points.append(float(clipped_data[item]))
+        values.append(None)
 
-    istream = open(option.input, 'r')
-    engine.consume(istream, ostream, batch=option.batch)
-
+    vbg = VerticalBarGraph(option.size, option)
+    vbg.update(points, values)
+    vbg.render(ostream)
 
 if __name__ == "__main__":
     print_device()
