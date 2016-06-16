@@ -10,12 +10,11 @@ strm = logging.StreamHandler(sys.stderr)
 log.addHandler(strm)
 log.setLevel(logging.WARN)
 
+from diagram import DGWrapper
+
 import wasatchusb
 from wasatchusb import feature_identification
 
-import argparse
-from diagram import VerticalBarGraph
-from diagram import Point
 
 def print_device():
     """ Print the default set of data from the device. To diagnose these
@@ -50,6 +49,10 @@ def print_device():
     print "Laser Avail: %s" % device.get_laser_availability()
     print "Sensor Length: %s" % device.get_sensor_line_length()
 
+    return device
+
+def print_data(device):
+
     device.set_integration_time(100)
     data = device.get_line()
     avg_data =  sum(data) / len(data)
@@ -59,46 +62,17 @@ def print_device():
     print "Min: %s Max: %s Avg: %s" \
             % (min(data), max(data), avg_data)
 
-    step_size = len(data) / 80
-    with open("ys.txt", "wb") as OUT_FILE:
-        for y_item in data[0::step_size]:
-            OUT_FILE.write("%s\n" % y_item)
-
-    parser = argparse.ArgumentParser(
-        description=(
-            'Text mode diagrams using UTF-8 characters and fancy colors.'
-        ),
-        epilog="""fake""",
-    )
-    option = parser.parse_args()
-    option.width = 0
-    option.height = 0
-    option.reverse = False
-    option.input = "ys.txt"
-    try:
-        ostream = sys.stdout.buffer
-    except AttributeError:
-        ostream = sys.stdout
-    option.batch = False
-    option.function = None
-    option.legend = True
-    option.encoding = 'utf-8'
-    option.color = True
-    option.palette = "default"
-
-    option.size = Point((option.width, option.height))
-
+    print ""
     points = []
     values = []
-    clipped_data = data[0::step_size]
-    for item in range(len(clipped_data)):
-        points.append(float(clipped_data[item]))
+    subsample_size = len(data) / 72
+    for item in data[::subsample_size]:
+        points.append(float(item))
         values.append(None)
 
-    vbg = VerticalBarGraph(option.size, option)
-    vbg.update(points, values)
-    vbg.render(ostream)
+    gram = DGWrapper(data=[points, values])
+    gram.show()
 
 if __name__ == "__main__":
-    print_device()
-
+    device = print_device()
+    print_data(device)
