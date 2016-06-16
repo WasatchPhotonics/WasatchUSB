@@ -10,8 +10,6 @@ strm = logging.StreamHandler(sys.stderr)
 log.addHandler(strm)
 log.setLevel(logging.WARN)
 
-from bashplotlib.scatterplot import plot_scatter
-
 import wasatchusb
 from wasatchusb import feature_identification
 
