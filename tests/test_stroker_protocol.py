@@ -138,8 +138,6 @@ class TestStrokerProtocol():
     """ ############################################################ """
 
     def test_get_calibration_eeprom(self, arm_mods_device):
-        assert arm_mods_device.get_integration_time() == 0
-
         coeffs = arm_mods_device.get_calibration_coeffs()
         assert coeffs[0] == "1.001"
         assert coeffs[1] == "2.002"
