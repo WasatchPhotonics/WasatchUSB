@@ -6,6 +6,7 @@ https://en.wikipedia.org/wiki/Stroker_kit
 
 import usb
 import math
+import struct
 
 import logging
 log = logging.getLogger(__name__)
@@ -88,8 +89,8 @@ class StrokerProtocolDevice(object):
 
 
     def send_code(self, FID_bmRequest, FID_wValue=0):
-        """ Perform the control message transfer, return the extracted
-        value
+        """ Perform the control message transfer required to send a
+        value to the device, return the extracted value.
         """
         FID_bmRequestType = 0x40 # host to device
         FID_wIndex = 0           # current specification has all index 0
@@ -109,8 +110,8 @@ class StrokerProtocolDevice(object):
 
 
     def get_sp_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
-        """ Perform the control message transfer, return the extracted
-        value
+        """ Use the StrokerProtocol (sp), and perform the control
+        message transfer required to get a setting from the device.
         """
         FID_bmRequestType = 0xC0 # device to host
         FID_wIndex = 0           # current specification has all index 0
@@ -370,4 +371,30 @@ class StrokerProtocolDevice(object):
         result = self.send_code(0xBE, value)
         return result
 
+    def get_calibration_coeffs(self):
+        """ Read the calibration coefficients from the on-board EEPROM.
+        """
 
+        eeprom_data = self.get_sp_code(0xA2)
+        log.debug("Full eeprom dump: %s", eeprom_data)
+
+        c0 = self.decode_eeprom(eeprom_data, width=8, offset=0)
+        c1 = self.decode_eeprom(eeprom_data, width=8, offset=8)
+        c2 = self.decode_eeprom(eeprom_data, width=8, offset=16)
+        c3 = self.decode_eeprom(eeprom_data, width=8, offset=24)
+
+        log.debug("Coeffs: %s, %s, %s, %s" % (c0, c1, c2, c3))
+        return [c0, c1, c2, c3]
+
+    def decode_eeprom(self, raw_data, width, offset=0):
+        """ Reorder, pad and decode the eeprom data to produce a string
+        representation of the value stored in the device memory.
+        """
+        # Take N width slice of the data starting from the offset
+        top_slice = raw_data[offset:offset+width]
+
+        # Unpack as an integer, always returns a tuple
+        unpacked = struct.unpack("d", top_slice)
+
+        log.debug("Unpacked str: %s ", unpacked)
+        return str(unpacked[0])

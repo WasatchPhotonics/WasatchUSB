@@ -4,7 +4,7 @@ includes nearly everything designed and created before 2016.
 Use caution with these test cases, as certain feature communication
 attempts and configurations are unavailable on certain devices. Lockups
 will be common. Use the "Feature Identification" series of tests and
-protocol definitions.
+protocol definitions for more reliable communication.
 """
 
 import sys
@@ -96,13 +96,13 @@ class TestStrokerProtocol():
 
     def test_set_laser_enable(self, device):
         assert device.get_laser_enable() == 0
-        device.set_laser_enable(1) 
+        device.set_laser_enable(1)
         assert device.get_laser_enable() == 1
-        device.set_laser_enable(0) 
+        device.set_laser_enable(0)
 
     def test_force_laser_off(self, device):
         # convenience function to ensure the laser is off
-        device.set_laser_enable(0) 
+        device.set_laser_enable(0)
 
 
     """ ################################################################
@@ -114,19 +114,19 @@ class TestStrokerProtocol():
     behind the scenes before displaying spectra to the user, which is
     designed in for exactly this type of scenario. Current testing for laser
     power stability is best served by turning the laser on manually with:
-    
+
     python -u -m unittest
         WasatchDevices.LibUsbStroker785SPI.Test.test_55_laser_on
-    
+
     The turn off the laser_enable portion in
-    BoardTester/TemperatureLogger.py, 
+    BoardTester/TemperatureLogger.py,
 
     """
     def test_set_arm_mods_laser_enable(self, arm_mods_device):
         assert arm_mods_device.get_laser_enable() == 0
-        arm_mods_device.set_laser_enable(1) 
+        arm_mods_device.set_laser_enable(1)
         assert arm_mods_device.get_laser_enable() == 1
-        arm_mods_device.set_laser_enable(0) 
+        arm_mods_device.set_laser_enable(0)
 
     def test_get_arm_mods_integration_time(self, arm_mods_device):
         assert arm_mods_device.get_integration_time() == 0
@@ -134,3 +134,15 @@ class TestStrokerProtocol():
     def test_get_arm_mods_laser_temperature(self, arm_mods_device):
         assert arm_mods_device.get_laser_temperature() >= 10.0
         assert arm_mods_device.get_laser_temperature() <= 60.0
+
+    """ ############################################################ """
+
+    def test_get_calibration_eeprom(self, arm_mods_device):
+        assert arm_mods_device.get_integration_time() == 0
+
+        coeffs = arm_mods_device.get_calibration_coeffs()
+        assert coeffs[0] == "1.001"
+        assert coeffs[1] == "2.002"
+        assert coeffs[2] == "3.003"
+        assert coeffs[3] == "4.004"
+

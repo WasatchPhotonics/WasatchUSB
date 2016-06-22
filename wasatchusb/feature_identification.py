@@ -79,6 +79,25 @@ class Device(object):
         model_number = model_number.replace("\x00", "")
         return model_number
 
+    def get_calibration(self, coefficient="C0"):
+        """ Extract the appropriate calibration coefficient field with a
+        control message to the device.
+        """
+
+        # The calibration data is stored in the second 'page' of the
+        # control message
+        second_page = 1
+        result = self.get_upper_code(0x01, FID_wIndex=second_page)
+        print "Full result: %s", result
+
+        cal_str = ""
+        for letter in result[0:15]:
+            cal_str += chr(letter)
+
+        cal_str = cal_str.replace("\x00", "")
+        return cal_str
+
+
 
     def send_code(self, FID_bmRequest, FID_wValue=0):
         """ Perform the control message transfer, return the extracted
@@ -102,12 +121,12 @@ class Device(object):
         return result
 
 
-    def get_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
+    def get_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64,
+                 FID_wIndex=0):
         """ Perform the control message transfer, return the extracted
         value
         """
         FID_bmRequestType = 0xC0 # device to host
-        FID_wIndex = 0           # current specification has all index 0
 
         result = None
         try:
@@ -122,11 +141,14 @@ class Device(object):
         log.debug("Raw result: [%s]", result)
         return result
 
-    def get_upper_code(self, FID_wValue):
+    def get_upper_code(self, FID_wValue, FID_wIndex=0):
         """ Convenience function to wrap "upper area" bmRequest feature
         identification code around the standard get code command.
         """
-        return self.get_code(FID_bmRequest=0xFF, FID_wValue=FID_wValue)
+        return self.get_code(FID_bmRequest=0xFF,
+                             FID_wValue=FID_wValue,
+                             FID_wIndex=FID_wIndex)
+
 
     def get_serial_number(self):
         """ Return the serial number portion of the model description.
@@ -235,9 +257,9 @@ class Device(object):
         """ Issue the "acquire" control message, then immediately read
         back from the bulk endpoint.
         """
-        
+
         result = self.send_code(0xAD)
-            
+
         line_buffer = 2048 # 1024 16bit pixels
         if self.pid == 0x2000:
             line_buffer = 1024 # 512 16bit pixels
