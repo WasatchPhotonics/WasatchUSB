@@ -104,47 +104,41 @@ class Device(object):
         return get_coeff
 
     def set_calibration(self, wvl_cal, tec_cal, laser_cal):
-        """ Write the double precision value for the given coefficients
+        """ Write the expected precision value for the given coefficients
         to the device eeprom. The entire page must be written at once,
         so make sure all of the values are populated.
         """
-	print "New Calibration values to be written:"
-	CalFloat1 = float(wvl_cal[0])
-	CalFloat2 = float(wvl_cal[1])
-	CalFloat3 = float(wvl_cal[2])
-	CalFloat4 = float(wvl_cal[3])
 
-	TempCoef1 = float(tec_cal[0])
-	TempCoef2 = float(tec_cal[1])
-	TempCoef3 = float(tec_cal[2])
+	wvl_c0 = float(wvl_cal[0])
+	wvl_c1 = float(wvl_cal[1])
+	wvl_c2 = float(wvl_cal[2])
+	wvl_c3 = float(wvl_cal[3])
 
-	TMax = float(tec_cal[3]) # maximum
-	TMin = float(tec_cal[4]) # minimum
+	tec_c0 = float(tec_cal[0])
+	tec_c1 = float(tec_cal[1])
+	tec_c2 = float(tec_cal[2])
 
-	LTMax = float(laser_cal[0]) # maximum
-	LTMin = float(laser_cal[1]) # minimum
+	tec_max = float(tec_cal[3]) # maximum
+	tec_min = float(tec_cal[4]) # minimum
 
-	trash = float(0.0)
+	laser_max = float(laser_cal[0]) # maximum
+	laser_min= float(laser_cal[1]) # minimum
 
-	CalibrationWriteList = []
-	AsciiNum = []
+	placeholder = float(0.0)
 
-	i = 0
-	for c in struct.pack('4d8f', CalFloat1, CalFloat2, CalFloat3, CalFloat4, TempCoef1, TempCoef2, TempCoef3, TMax, TMin, LTMax, LTMin, trash):
-		print hex(ord(c))[2:].zfill(2),
-		AsciiNum.append(ord(c))
-		if not ((i+1) % 16):
-			print(' ')
+        packed = struct.pack("4d8f",
+                             wvl_c0, wvl_c1, wvl_c2, wvl_c3,
+                             tec_c0, tec_c1, tec_c2,
+                             tec_max, tec_min,
+                             laser_max, laser_min,
+                             placeholder)
 
-		i += 1
-	print
+        log.debug("packed: %s" % packed)
 
-
-	#dev.ctrl_transfer(H2D, STC, SMI, PG1, AsciiNum, TIMEOUT)
         self.send_code(FID_bmRequest=0xFF,
-                       FID_wValue=0x02,
-                       FID_wIndex=0x01,
-                       FID_data_or_wLength=AsciiNum)
+                       FID_wValue=0x02, # Set eeprom code
+                       FID_wIndex=0x01, # second page
+                       FID_data_or_wLength=packed)
 
 
     def send_code(self, FID_bmRequest, FID_wValue=0, FID_wIndex=0,
