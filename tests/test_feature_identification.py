@@ -108,7 +108,20 @@ class TestFeatureIdentification():
     def test_get_arm_calibration(self, arm_device):
 
         cal_coeff0 = arm_device.get_calibration("C0")
+        cal_coeff0 = "%0.4f" % cal_coeff0
         assert cal_coeff0 == "1.2345"
+
+        cal_coeff1 = arm_device.get_calibration("C1")
+        cal_coeff1 = "%0.4f" % cal_coeff1
+        assert cal_coeff1 == "2.3456"
+
+        cal_coeff1 = arm_device.get_calibration("C2")
+        cal_coeff1 = "%0.4f" % cal_coeff1
+        assert cal_coeff1 == "3.4567"
+
+        cal_coeff2 = arm_device.get_calibration("C3")
+        cal_coeff2 = "%0.4f" % cal_coeff2
+        assert cal_coeff2 == "4.5678"
 
     def test_get_calibration(self, ingaas_device):
 

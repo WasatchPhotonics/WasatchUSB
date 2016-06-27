@@ -5,6 +5,7 @@ identification protocol devices from Wasatch Photonics.
 import usb
 import usb.core
 import usb.util
+import struct
 
 import logging
 log = logging.getLogger(__name__)
@@ -88,15 +89,19 @@ class Device(object):
         # control message
         second_page = 1
         result = self.get_upper_code(0x01, FID_wIndex=second_page)
-        print "Full result: %s", result
 
-        cal_str = ""
-        for letter in result[0:15]:
-            cal_str += chr(letter)
+        coeff_position = {"C0": [0, 8],
+                          "C1": [8, 16],
+                          "C2": [16, 24],
+                          "C3": [24, 32]
+                         }
 
-        cal_str = cal_str.replace("\x00", "")
-        return cal_str
+        start = coeff_position[coefficient][0]
+        cease = coeff_position[coefficient][1]
+        get_coeff = struct.unpack("d", result[start:cease])[0]
 
+        log.debug("Get: %s", get_coeff)
+        return get_coeff
 
 
     def send_code(self, FID_bmRequest, FID_wValue=0):
