@@ -105,7 +105,17 @@ class TestFeatureIdentification():
         model_number = arm_device.get_model_number()
         assert model_number == "785LC"
 
-    def test_get_arm_calibration(self, arm_device):
+    def set_arm_calibration(self, arm_device, C0, C1, C2, C3):
+
+        wvl_cal = [C0, C1, C2, C3]
+
+        tec_cal = [1.1, 2.2, 3.3, 30.6, 10.1]
+        laser_cal = [40.5, 10.1]
+        result = arm_device.set_calibration(wvl_cal, tec_cal, laser_cal)
+
+    def test_set_and_get_arm_calibration(self, arm_device):
+
+        self.set_arm_calibration(arm_device, 1.2345, 2.3456, 3.4567, -4.5678)
 
         cal_coeff0 = arm_device.get_calibration("C0")
         cal_coeff0 = "%0.4f" % cal_coeff0
@@ -121,7 +131,7 @@ class TestFeatureIdentification():
 
         cal_coeff2 = arm_device.get_calibration("C3")
         cal_coeff2 = "%0.4f" % cal_coeff2
-        assert cal_coeff2 == "4.5678"
+        assert cal_coeff2 == "-4.5678"
 
     def test_get_calibration(self, ingaas_device):
 

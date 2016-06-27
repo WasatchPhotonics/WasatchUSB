@@ -103,14 +103,56 @@ class Device(object):
         log.debug("Get: %s", get_coeff)
         return get_coeff
 
+    def set_calibration(self, wvl_cal, tec_cal, laser_cal):
+        """ Write the double precision value for the given coefficients
+        to the device eeprom. The entire page must be written at once,
+        so make sure all of the values are populated.
+        """
+	print "New Calibration values to be written:"
+	CalFloat1 = float(wvl_cal[0])
+	CalFloat2 = float(wvl_cal[1])
+	CalFloat3 = float(wvl_cal[2])
+	CalFloat4 = float(wvl_cal[3])
 
-    def send_code(self, FID_bmRequest, FID_wValue=0):
+	TempCoef1 = float(tec_cal[0])
+	TempCoef2 = float(tec_cal[1])
+	TempCoef3 = float(tec_cal[2])
+
+	TMax = float(tec_cal[3]) # maximum
+	TMin = float(tec_cal[4]) # minimum
+
+	LTMax = float(laser_cal[0]) # maximum
+	LTMin = float(laser_cal[1]) # minimum
+
+	trash = float(0.0)
+
+	CalibrationWriteList = []
+	AsciiNum = []
+
+	i = 0
+	for c in struct.pack('4d8f', CalFloat1, CalFloat2, CalFloat3, CalFloat4, TempCoef1, TempCoef2, TempCoef3, TMax, TMin, LTMax, LTMin, trash):
+		print hex(ord(c))[2:].zfill(2),
+		AsciiNum.append(ord(c))
+		if not ((i+1) % 16):
+			print(' ')
+
+		i += 1
+	print
+
+
+	#dev.ctrl_transfer(H2D, STC, SMI, PG1, AsciiNum, TIMEOUT)
+        self.send_code(FID_bmRequest=0xFF,
+                       FID_wValue=0x02,
+                       FID_wIndex=0x01,
+                       FID_data_or_wLength=AsciiNum)
+
+
+    def send_code(self, FID_bmRequest, FID_wValue=0, FID_wIndex=0,
+                  FID_data_or_wLength=""):
         """ Perform the control message transfer, return the extracted
-        value
+        value. Yes, the USB spec really does say data_or_length
         """
         FID_bmRequestType = 0x40 # host to device
-        FID_wIndex = 0           # current specification has all index 0
-        FID_wLength = ""
 
         result = None
         try:
@@ -118,7 +160,7 @@ class Device(object):
                                                FID_bmRequest,
                                                FID_wValue,
                                                FID_wIndex,
-                                               FID_wLength)
+                                               FID_data_or_wLength)
         except Exception as exc:
             log.critical("Problem with ctrl transfer: %s", exc)
 
