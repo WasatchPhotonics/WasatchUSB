@@ -4,7 +4,8 @@ includes nearly everything designed and created before 2016.
 Use caution with these test cases, as certain feature communication
 attempts and configurations are unavailable on certain devices. Lockups
 will be common. Use the "Feature Identification" series of tests and
-protocol definitions for more reliable communication.
+protocol definitions for more reliable communication - if you're
+hardware supports it.
 """
 
 import sys
@@ -15,8 +16,11 @@ log = logging.getLogger(__name__)
 strm = logging.StreamHandler(sys.stdout)
 log.addHandler(strm)
 
-# Change this to the PID of the device under test
-DEVICE_PID=0x0028
+# Change these parameters to match the device under test
+DEVICE_PID = 0x0028
+DEVICE_SERIAL = "S-00179"
+FPGA_REVISION = "023-008"
+SWCODE_REVISION = "36-0"
 
 class TestStrokerProtocol():
     @pytest.fixture
@@ -32,7 +36,7 @@ class TestStrokerProtocol():
         assert len(result) == 1
 
     def test_list_device_is_stroker_protocol(self, dev_list):
-        log.critical("Make sure only FX2 0x0001 is connected")
+        log.critical("Make sure only %s is connected", hex(DEVICE_PID))
 
         result = dev_list.get_all()
         assert len(result) == 1
@@ -61,7 +65,7 @@ class TestStrokerProtocol():
 
     def test_get_serial_number(self, device):
         serial_number = device.get_serial_number()
-        assert serial_number == "S-00179"
+        assert serial_number == DEVICE_SERIAL
 
     def test_get_integration_time(self, device):
         assert device.get_integration_time() == 0
@@ -76,16 +80,19 @@ class TestStrokerProtocol():
         assert device.get_ccd_temperature() >= 1.0
         assert device.get_ccd_temperature() <= 90.0
 
-    def test_get_laser_temperature(self, device):
-        assert device.get_laser_temperature() >= 10.0
-        assert device.get_laser_temperature() <= 60.0
+    def test_get_standard_software_code(self, device):
+        result = device.get_standard_software_code()
+        assert result == SWCODE_REVISION
 
-    def test_set_laser_enable(self, device):
-        assert device.get_laser_enable() == 0
-        device.set_laser_enable(1)
-        assert device.get_laser_enable() == 1
-        device.set_laser_enable(0)
+    def test_get_fpga_revision(self, device):
+        result = device.get_fpga_revision()
+        assert result == FPGA_REVISION
 
-    def test_force_laser_off(self, device):
-        # convenience function to ensure the laser is off
-        device.set_laser_enable(0)
+    def test_get_single_line_of_data(self, device):
+        result = device.get_line()
+        assert len(result) == 1024
+        assert min(result) >= 10
+        assert max(result) <= 65535
+
+        average = sum(result) / len(result)
+        assert average >= 20

@@ -1,7 +1,13 @@
+""" Test cases for the camera.py module. These were built as a first
+iteration for the BoardRoaster. You probably want the newer feature
+identification wrappers and test cases, or maybe the stroker protocol
+wrappers and test cases.
+"""
+
 import unittest
 import time
 
-import phidgeter        
+import phidgeter
 from phidgeter.relay import Relay
 from wasatchusb.camera import CameraUSB
 from wasatchusb.utils import FindDevices
@@ -24,7 +30,7 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         self.ensure_all_off(self.phd_relay)
-   
+
     def test_no_device_connection(self):
         # Devices are on from setup, turn off manually here and wait
         self.ensure_all_off(self.phd_relay)
@@ -38,7 +44,7 @@ class Test(unittest.TestCase):
 
         fd = FindDevices()
         result, serial = fd.get_serial(vid, pid)
-        self.assertFalse(result) 
+        self.assertFalse(result)
         self.assertTrue(ud.disconnect())
 
     def test_single_line_internal_trigger(self):
@@ -52,7 +58,7 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
         self.assertEquals(len(pixel_data), 1024)
         self.assertTrue(ud.disconnect())
-        
+
 
     def test_get_device_firmware_revisions(self):
         ud = CameraUSB()

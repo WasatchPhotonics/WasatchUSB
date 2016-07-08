@@ -12,6 +12,9 @@ import logging
 log = logging.getLogger(__name__)
 
 class ListDevices(object):
+    """ Create a list of vendor id, product id pairs of any device on
+    the bus with the 0x24AA VID.
+    """
     def __init__(self):
         log.debug("init")
 
@@ -30,6 +33,11 @@ class ListDevices(object):
         return list_devices
 
 class StrokerProtocolDevice(object):
+    """ Provide function wrappers for all of the common tasks associated
+    with stroker control. This includes control messages to pass
+    settings back and forth, as well as bulk transfers to get lines of
+    data from the device.
+    """
     def __init__(self, vid=0x24aa, pid=0x0001):
         log.debug("init")
         self.vid = vid
@@ -243,11 +251,12 @@ class StrokerProtocolDevice(object):
     def get_standard_software_code(self):
         """ 0xC0 is not to be confused with the device to host specification in
         the control message. This is a vendor defined opcode for returning the
-        software information.
+        software information. Result is Major version, hyphen, minor
+        version.
         """
         result = self.get_sp_code(0xC0)
-        sw_code = "%d.%d.%d.%d" \
-                  % (result[3], result[2], result[1], result[0])
+        sw_code = "%d-%d" \
+                  % (result[0], result[1])
         return sw_code
 
     def get_fpga_revision(self):

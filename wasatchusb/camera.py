@@ -1,4 +1,8 @@
 """ camera - CameraUSB and SimulatedUSB devices for Wasatch Photonics.
+
+Mostly kept for historical purposes as this was designed as a portable,
+bare functionality wrapper for various hardware validation requirements.
+You probably want the feature identification or stroker protocol files.
 """
 import usb
 import time
@@ -31,12 +35,12 @@ class SimulatedUSB(object):
             self._assign = assign_type
             self.serial_number = assign_type
             self.integration_time = 10
-       
+
         elif assign_type == "Stroker785M":
             self.pixel_count = 2048
             self._assign = assign_type
             self.serial_number = assign_type
- 
+
         if self._assign is None:
             raise(ValueError, "Unknown device type")
 
@@ -77,7 +81,7 @@ class SimulatedUSB(object):
         polynomial transformation. Return the axis of pixel_count in
         length.
         """
-            
+
         c0 = float(self.linearity_coefficient_c0)
         c1 = float(self.linearity_coefficient_c1)
         c2 = float(self.linearity_coefficient_c2)
@@ -104,7 +108,7 @@ class SimulatedUSB(object):
         pixel_data = numpy.linspace(0, px-1, px)
         return pixel_data
 
-    def connect(self, vid=0x24aa, pid=0x0005):    
+    def connect(self, vid=0x24aa, pid=0x0005):
         """ Connect to the device assigned, regardless of the vid/pid.
         """
         self.check_unassigned()
@@ -121,10 +125,10 @@ class SimulatedUSB(object):
         """ Reset all variables, keep device assignment.
         """
         self.check_unassigned()
-        
+
         if not self.is_connected:
             raise(TypeError, "Already disconnected")
-    
+
         self.is_connected = False
         self.vid = None
         self.pid = None
@@ -143,11 +147,11 @@ class SimulatedUSB(object):
 
 class RealisticSimulatedUSB(SimulatedUSB):
     """ Same simualted data and other interface concepts, along with
-    delays of integration time for long acquisitions. 
+    delays of integration time for long acquisitions.
     """
     def __init__(self):
         super(RealisticSimulatedUSB, self).__init__()
-        
+
     def get_line_pixel(self):
         """ Get the simulated data immediately, then wait the required
         time.
@@ -168,20 +172,20 @@ class ThreadedUSB(RealisticSimulatedUSB):
         self.data_queue = Queue.Queue(maxsize=1)
 
     def start_acquire(self):
-        """ Start a new thread with the data queue. 
+        """ Start a new thread with the data queue.
         """
         self.thr_usb = ThreadedDevice(self, self.data_queue)
         return True
-  
+
     def is_data_ready(self):
-        """ Look for a data item in the queue, return status.   
+        """ Look for a data item in the queue, return status.
         """
         return self.data_queue.full()
 
     def get_last_data(self):
         """ Return an empty list, or the actual data from the queue if
         available.
-        """ 
+        """
         data_list = []
         try:
             data_list = self.data_queue.get_nowait()
@@ -206,7 +210,7 @@ class ThreadedDevice(threading.Thread):
         pixel_data = self.device.get_line_pixel()
         self.data_queue.put(pixel_data)
 
-    
+
 
 class CameraUSB(object):
     """ Communicate with a Wasatch Photonics Stroker ARM USB board
@@ -225,14 +229,14 @@ class CameraUSB(object):
         for bus in usb.busses():
             for dev in bus.devices:
                 if dev.idVendor == vid and dev.idProduct == pid:
-                    self._device = dev.open() 
+                    self._device = dev.open()
 
         if self._device is None:
             #print "Can't open device VID:%s PID:%s" % (vid, pid)
             return False
 
         return True
-           
+
     def disconnect(self):
         """ Only attempt to release the interface if already
         attached. If you don't attempt to disconnect ever, it will throw
@@ -244,32 +248,32 @@ class CameraUSB(object):
             self._bulk_enabled = False
 
         return True
-    
+
     def get_sw_code(self):
-           
+
         DEVICE2HOST = 0xC0
         VR_GET_CODE_REVISION = 0xC0
         TIMEOUT = 1000
-        od = self._device 
+        od = self._device
         buffer_size = 5
-        result = od.controlMsg(DEVICE2HOST, 
+        result = od.controlMsg(DEVICE2HOST,
                                VR_GET_CODE_REVISION,
                                buffer_size, 0, 0, TIMEOUT)
-        
+
         ARMVersion = result
-        arm_version = '{0:}{1:}{2:}{3:}{4:}'.format(chr(ARMVersion[0]), 
-                        chr(ARMVersion[1]),chr(ARMVersion[2]), 
+        arm_version = '{0:}{1:}{2:}{3:}{4:}'.format(chr(ARMVersion[0]),
+                        chr(ARMVersion[1]),chr(ARMVersion[2]),
                         chr(ARMVersion[3]), chr(ARMVersion[4]))
         #print "ARM Software version: %s" % arm_version
-        return 1, arm_version 
-                
-       
+        return 1, arm_version
+
+
     def get_fpga_code(self):
         DEVICE2HOST = 0xC0
         CMD_INFO = 0xb4
         TIMEOUT = 1000
         od = self._device
-        result = od.controlMsg(DEVICE2HOST, 
+        result = od.controlMsg(DEVICE2HOST,
                                CMD_INFO,
                                7, 0, 0, TIMEOUT)
         curr_code = "".join(map(chr, result))
@@ -289,8 +293,8 @@ class CameraUSB(object):
             self._bulk_enabled = True
 
         zero_data = numpy.linspace(0,0,1024)
-       
-        # Trigger the command to readout from the CCD 
+
+        # Trigger the command to readout from the CCD
         waitti = self._device.controlMsg(HOST2DEVICE, CMD_GET_IMAGE,
                                          ZEROS, 1, 0, TIMEOUT)
 
@@ -300,6 +304,6 @@ class CameraUSB(object):
 
         # Unpack that data into a list
         data = [i + 256 * j for i, j in zip(data[::2], data[1::2])]
-    
+
         return 1, data
 
