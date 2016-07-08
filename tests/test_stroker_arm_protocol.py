@@ -54,7 +54,7 @@ class TestStrokerProtocol():
         log.critical("Expect stroker protocol device connected")
 
         from wasatchusb import stroker_protocol
-        device = stroker_protocol.StrokerProtocolDevice(pid=0x0001)
+        device = stroker_protocol.StrokerProtocolDevice(pid=0x0028)
         result = device.connect()
         assert result is True
 
@@ -62,7 +62,7 @@ class TestStrokerProtocol():
         assert result is True
 
     @pytest.fixture
-    def device(self, pid=0x0001):
+    def device(self, pid=0x0028):
         from wasatchusb import stroker_protocol
         device = stroker_protocol.StrokerProtocolDevice(pid=pid)
         result = device.connect()
@@ -75,7 +75,7 @@ class TestStrokerProtocol():
 
     def test_get_serial_number(self, device):
         serial_number = device.get_serial_number()
-        assert serial_number == "MTI-000B5"
+        assert serial_number == "S-00179"
 
     def test_get_integration_time(self, device):
         assert device.get_integration_time() == 0

@@ -160,11 +160,19 @@ class StrokerProtocolDevice(object):
         """ Return the serial number portion of the USB descriptor.
         """
         serial = "Unavailable"
+
+        # Older units support the 256 langid. Newer units require none.
         try:
             serial = usb.util.get_string(self.device,
                                          self.device.iSerialNumber, 256)
         except Exception as exc:
-            log.warn("Failure to read serial: %s", exc)
+            log.info("Failure to read langid 256 serial: %s", exc)
+
+        try:
+            serial = usb.util.get_string(self.device,
+                                         self.device.iSerialNumber)
+        except Exception as exc:
+            log.info("Failure to read langid none serial: %s", exc)
 
         return serial
 
