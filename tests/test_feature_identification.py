@@ -103,7 +103,7 @@ class TestFeatureIdentification():
     def test_get_arm_model_number(self, arm_device):
 
         model_number = arm_device.get_model_number()
-        assert model_number == "785LC"
+        assert model_number == "785L"
 
     def set_arm_calibration(self, arm_device, C0, C1, C2, C3):
 
@@ -224,6 +224,6 @@ class TestFeatureIdentification():
 
     def test_arm_pid_4000_set_integration_time(self, arm_device):
         # device defaults to 0 on power up
-        #assert arm_device.get_integration_time() == 0
+        assert arm_device.get_integration_time() == 0
         arm_device.set_integration_time(100)
         assert arm_device.get_integration_time() == 100
