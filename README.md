@@ -1,5 +1,5 @@
 WasatchUSB - USB cameras and devices from Wasatch Photonics 
-
+ 
 This module is intended to provide the absolute bare-minimum, pure
 python communication with a StrokerARMUSB board. These tests include
 communication with a Phidgets relay device, to place the device in a
@@ -29,8 +29,6 @@ Open a command prompt, and run:
 
 You will see output similar to:
 
-    Device: 0     VID: 0x24aa PID: 0x1000
-    Connect to last device pid: 4096
     Model:  785IOC
     Serial: S-00146
     SWCode: 10.0.0.0
@@ -39,6 +37,17 @@ You will see output similar to:
     Laser Avail: 0
     Sensor Length: 1024
 
-    Grab Data: 1024 pixels
-    Min: 996 Max: 1287 Avg: 1029
+    
+    +837    ▅                                      █                               
+            █                                      █                               
+            █                                      █      ▂                      ▂ 
+            █                                      █▄     █                      █ 
+            █                     ▄     ▇          ██     █            ▄     ▄   █ 
+            █        ▂▅ ▅   ▅     █     █          ██    ▅█   █ █  ▂   █     █   █ 
+           ▇█▄       ██ █ ▇ █▄▄   █     █     ▇    ██    ██   █ █  █   █   ▄ █▄ ▄█ 
+           ████▅  █▂ ██▅█▅█ ███ ▅ █ █ ▅▅█ ▂   █    ██ ▂  ██   █▅█  █▂ ▂█▂▅██▂██ ██▅
+          ▂█████  ██▅██████████▅█▅█████████ ▂▂██  ███▅█  ██   ████▅██▂█████████████
+    +787  ██████▇▇█████████████████████████▇████  █████▄ ██▄▄▇█████████████████████
+          Min: 783 Max: 1285 Avg: 801
+
 
