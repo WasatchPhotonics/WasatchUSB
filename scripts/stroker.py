@@ -12,7 +12,13 @@ strm = logging.StreamHandler(sys.stderr)
 log.addHandler(strm)
 log.setLevel(logging.WARN)
 
-from diagram import DGWrapper
+graph_available = True
+try:
+    from diagram import DGWrapper
+except ImportError as exc:
+    graph_available = False
+    log.warn("No diagram module - lineplots disabled.")
+    log.warn("See: https://github.com/WasatchPhotonics/diagram")
 
 from wasatchusb import stroker_protocol
 
@@ -62,9 +68,11 @@ def print_data(device):
         points.append(float(item))
         values.append(None)
 
-    gram = DGWrapper(data=[points, values])
-    gram.show()
-    print "      Min: %s Max: %s Avg: %s" \
+    if graph_available:
+        gram = DGWrapper(data=[points, values])
+        gram.show()
+
+    print "Min: %s Max: %s Avg: %s" \
             % (min(data), max(data), avg_data)
 
 if __name__ == "__main__":
