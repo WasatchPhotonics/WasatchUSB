@@ -12,8 +12,6 @@ strm = logging.StreamHandler(sys.stderr)
 log.addHandler(strm)
 log.setLevel(logging.WARN)
 
-import colorama
-
 graph_available = True
 try:
     from diagram import DGWrapper
