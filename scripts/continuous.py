@@ -25,7 +25,7 @@ from wasatchusb import stroker_protocol, feature_identification
 
 
 def print_device():
-    """ Connect to the first discovered stroker protocol or feature 
+    """ Connect to the first discovered stroker protocol or feature
     identification device. To diagnose this functionality individually,
     use the scripts/featureid.py and scripts/stroker.py files along with
     the respective tests/ cases.
@@ -44,7 +44,7 @@ def print_device():
     	if result == []:
             print "No feature identification protocol device"
 	    sys.exit(1)
-        
+
 
     dev_count = 0
     for item in dev_list.get_all():
@@ -57,7 +57,7 @@ def print_device():
 
     if fid_device:
         device = feature_identification.Device(pid=last_pid)
-    
+
     else:
         device = stroker_protocol.StrokerProtocolDevice(pid=last_pid)
     device.connect()
@@ -76,6 +76,7 @@ def print_data(device):
     max_lines = 2000
     for line in range(max_lines):
         data = device.get_line()
+        tempc = device.get_ccd_temperature()
 
         points = []
         values = []
@@ -88,14 +89,15 @@ def print_data(device):
             gram = DGWrapper(data=[points, values])
             gram.show()
 
+            print "Temperature: %2.3f" % tempc
             # Move cursor 11 lines up
-            print '\x1b[11A'
+            print '\x1b[12A'
 
 	else:
             avg_data =  sum(data) / len(data)
             print "Min: %s Max: %s Avg: %s" \
                   % (min(data), max(data), avg_data)
-	
+
 
 
 

@@ -11,10 +11,14 @@ hardware supports it.
 import sys
 import pytest
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger()
 
+frmt = logging.Formatter("%(name)s %(levelname)-8s %(message)s")
+log.setLevel(level=logging.DEBUG)
 strm = logging.StreamHandler(sys.stdout)
+strm.setFormatter(frmt)
 log.addHandler(strm)
+
 
 # Change these parameters to match the device under test
 DEVICE_PID = 0x0028
@@ -80,6 +84,32 @@ class TestStrokerProtocol():
         assert device.get_ccd_temperature() >= 1.0
         assert device.get_ccd_temperature() <= 90.0
 
+    def test_set_ccd_tec_setpoint_fails(self, device):
+        """ Verify that you can't set an out of range temperature
+        setpoint, or a setpoint before TEC coefficients are assigned.
+        """
+        result = device.get_ccd_tec_setpoint()
+        assert result == 0.0
+
+        # Minimum range check
+        result = device.set_ccd_tec_setpoint(5.0)
+        assert result == False
+
+        # Maximum range check
+        result = device.set_ccd_tec_setpoint(25.0)
+        assert result == False
+
+
+    def test_set_get_ccd_tec_setpoint(self, device):
+        result = device.get_ccd_tec_setpoint()
+        assert result == 0.0
+
+        result = device.set_ccd_tec_setpoint(15.0)
+        assert result == True
+
+        result = device.get_ccd_tec_setpoint()
+        assert result == 15.0
+
     def test_get_standard_software_code(self, device):
         result = device.get_standard_software_code()
         assert result == SWCODE_REVISION
@@ -96,3 +126,4 @@ class TestStrokerProtocol():
 
         average = sum(result) / len(result)
         assert average >= 20
+

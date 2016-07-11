@@ -43,6 +43,9 @@ class StrokerProtocolDevice(object):
         self.vid = vid
         self.pid = pid
         self.device = None
+        self.tec_coeff0 = 3566.62
+        self.tec_coeff1 = -143.543
+        self.tec_coeff2 = -0.324723
 
     def connect(self):
         """ Attempt to connect to the specified device. Log any failures and
@@ -192,7 +195,7 @@ class StrokerProtocolDevice(object):
 
         curr_time = (result[2] * 0x10000) + (result[1] * 0x100) + result[0]
 
-        log.critical("Integration time: %s", curr_time)
+        log.debug("Integration time: %s", curr_time)
         return curr_time
 
 
@@ -346,33 +349,26 @@ class StrokerProtocolDevice(object):
         temperature value.
         """
 
-        result = -273 # The clearly invalid value
-
-        try:
-            result = self.get_sp_code(0xD7)
-        except Exction as exc:
-            log.critical("Failure reading temperature: %s", exc)
-            return result
+        result = self.get_sp_code(0xD7)
 
         log.debug("Plain adc: %s", result)
 
-        try:
-            adc_value  = float(result[1] + (result[0] * 256))
-            voltage    = float((adc_value / 4096.0) * 1.5)
-            tempc = 0.01
-            resistance = 10000 * voltage
-            resistance = resistance / (2 - voltage)
-            logVal     = math.log( resistance / 10000 )
-            insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
-            tempc      = float( (3977.0 / insideMain) -273.0 )
-            result     = tempc
+        # Swap endianness of raw ADC value
+        adc_value  = float(result[1] + (result[0] * 256))
 
-        except Exception as exc:
-            log.critical("Failure processing laser temperature: %s",
-                         exc)
-            return -173 # clearly less invalid
+        # Convert to voltage (12 bit)
+        voltage    = float((adc_value / 4096.0) * 1.5)
 
-        return result
+        # Convert to resistance
+        resistance = 10000 * voltage
+        resistance = resistance / (2 - voltage)
+
+        # Find the log of the resistance with a 10kOHM resistor
+        logVal     = math.log( resistance / 10000 )
+        insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
+        tempc      = float( (3977.0 / insideMain) -273.0 )
+
+        return tempc
 
     def get_laser_enable(self):
         """ Read the laser enable status from the device.
@@ -415,3 +411,39 @@ class StrokerProtocolDevice(object):
 
         log.debug("Unpacked str: %s ", unpacked)
         return str(unpacked[0])
+
+    def set_ccd_tec_setpoint(self, setpoint):
+        """ Attempt to set the CCD cooler setpoint. Verify that it is
+        within an acceptable range. Ideally this is to prevent
+        condensation and other issues. This value is a default and is
+        hugely dependent on the environmental conditions.
+        """
+
+        setpoint_min = 10
+        setpoint_max = 20
+        ok_range = "%s,%s" % (setpoint_min, setpoint_max)
+        if setpoint < setpoint_min:
+            log.critical("TEC setpoint out of range (%s)", ok_range)
+            return False
+
+        if setpoint > setpoint_max:
+            log.critical("TEC setpoint out of range (%s)", ok_range)
+            return False
+
+        new_point = self.tec_coeff0 + (self.tec_coeff1 * setpoint)
+        new_point = new_point + (self.tec_coeff2 * (setpoint * setpoint))
+
+        log.debug("Setting TEC setpoint to: %s", new_point)
+        result = self.send_code(0xD8, new_point)
+        return result
+
+
+    def get_ccd_tec_setpoint(self):
+        """ Read the CCD cooler setpoint stored on the device.
+        """
+        result = self.get_sp_code(0xD9)
+        ccd_tec_setpoint = (result[1] * 256) + result[0]
+
+        log.critical("CCD TEC setpoint: %s", ccd_tec_setpoint)
+        return ccd_tec_setpoint
+
