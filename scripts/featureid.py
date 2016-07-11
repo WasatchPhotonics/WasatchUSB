@@ -17,6 +17,7 @@ except ImportError as exc:
     graph_available = False
     log.warn("No diagram module - lineplots disabled.")
     log.warn("See: https://github.com/WasatchPhotonics/diagram")
+    log.warn("Exception: %s", exc)
 
 import wasatchusb
 from wasatchusb import feature_identification
@@ -74,8 +75,9 @@ def print_data(device):
         gram = DGWrapper(data=[points, values])
         gram.show()
 
-    print "Min: %s Max: %s Avg: %s" \
-            % (min(data), max(data), avg_data)
+    else:
+        print "Min: %s Max: %s Avg: %s" \
+              % (min(data), max(data), avg_data)
 
 if __name__ == "__main__":
     device = print_device()

@@ -19,21 +19,32 @@ except ImportError as exc:
     graph_available = False
     log.warn("No diagram module - lineplots disabled.")
     log.warn("See: https://github.com/WasatchPhotonics/diagram")
+    log.warn("Exception: %s", exc)
 
-from wasatchusb import stroker_protocol
+from wasatchusb import stroker_protocol, feature_identification
 
 
 def print_device():
-    """ Print the default set of data from the device. To diagnose these
-    individually, see the wasatchusb/test/test_stroker_fx2_protocol.py
+    """ Connect to the first discovered stroker protocol or feature 
+    identification device. To diagnose this functionality individually,
+    use the scripts/featureid.py and scripts/stroker.py files along with
+    the respective tests/ cases.
     file.
     """
 
     dev_list = stroker_protocol.ListDevices()
     result = dev_list.get_all()
+    fid_device = 0
     if result == []:
-        print "No devices found!"
-        sys.exit(1)
+        log.warn("No stroker protocol device")
+
+    	dev_list = feature_identification.ListDevices()
+    	result = dev_list.get_all()
+	fid_device = 1
+    	if result == []:
+            print "No feature identification protocol device"
+	    sys.exit(1)
+        
 
     dev_count = 0
     for item in dev_list.get_all():
@@ -44,7 +55,11 @@ def print_device():
     last_device = dev_list.get_all()[-1]
     last_pid = int(last_device[1], 16)
 
-    device = stroker_protocol.StrokerProtocolDevice(pid=last_pid)
+    if fid_device:
+        device = feature_identification.Device(pid=last_pid)
+    
+    else:
+        device = stroker_protocol.StrokerProtocolDevice(pid=last_pid)
     device.connect()
     print "Serial:        %s" % device.get_serial_number()
     print "SWCode:        %s" % device.get_standard_software_code()
@@ -69,11 +84,19 @@ def print_data(device):
             points.append(float(item))
             values.append(None)
 
-        gram = DGWrapper(data=[points, values])
-        gram.show()
+	if graph_available:
+            gram = DGWrapper(data=[points, values])
+            gram.show()
 
-        # Move cursor 11 lines up
-        print '\x1b[11A'
+            # Move cursor 11 lines up
+            print '\x1b[11A'
+
+	else:
+            avg_data =  sum(data) / len(data)
+            print "Min: %s Max: %s Avg: %s" \
+                  % (min(data), max(data), avg_data)
+	
+
 
 
 if __name__ == "__main__":

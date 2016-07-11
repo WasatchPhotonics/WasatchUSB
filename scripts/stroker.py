@@ -19,6 +19,7 @@ except ImportError as exc:
     graph_available = False
     log.warn("No diagram module - lineplots disabled.")
     log.warn("See: https://github.com/WasatchPhotonics/diagram")
+    log.warn("Exception: %s", exc)
 
 from wasatchusb import stroker_protocol
 
@@ -71,9 +72,9 @@ def print_data(device):
     if graph_available:
         gram = DGWrapper(data=[points, values])
         gram.show()
-
-    print "Min: %s Max: %s Avg: %s" \
-            % (min(data), max(data), avg_data)
+    else:
+        print "Min: %s Max: %s Avg: %s" \
+              % (min(data), max(data), avg_data)
 
 if __name__ == "__main__":
     device = print_device()
