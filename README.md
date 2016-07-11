@@ -1,9 +1,7 @@
-WasatchUSB - USB cameras and devices from Wasatch Photonics 
+WasatchUSB - USB device control from Wasatch Photonics 
  
 This module is intended to provide the absolute bare-minimum, pure
-python communication with a StrokerARMUSB board. These tests include
-communication with a Phidgets relay device, to place the device in a
-known power state.
+python communication with a wasatch photonics device board. 
 
 Feature identification is supported through the scripts/featureid.py file.
 Run this program to dump the current configuration of any feature
@@ -51,3 +49,5 @@ You will see output similar to:
           Min: 783 Max: 1285 Avg: 801
 
 
+Older devices are supported through the Stroker Protocol interface. Stroker in this
+context refers to automotive performance: https://en.wikipedia.org/wiki/Stroker_kit
