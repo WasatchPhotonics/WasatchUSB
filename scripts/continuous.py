@@ -79,7 +79,7 @@ def print_data(device):
     temp_points = []
     temp_values = []
 
-    max_lines = 20
+    max_lines = 2000
     for line in range(max_lines):
         data = device.get_line()
         tempc = device.get_ccd_temperature()
@@ -91,7 +91,8 @@ def print_data(device):
 
         points = []
         values = []
-        subsample_size = len(data) / 72
+        column_width = 64
+        subsample_size = len(data) / column_width
         for item in data[::subsample_size]:
             points.append(float(item))
             values.append(None)
@@ -111,7 +112,7 @@ def print_data(device):
         temp_options = DOption()
         temp_options.mode = "g"
         temp_options.palette = "blue"
-        temp_options.size = Point([0, 3])
+        temp_options.size = Point([column_width+12, 3])
         temp_gram = DGWrapper(dg_option=temp_options,
                 data=[temp_points, temp_values])
         temp_gram.show()
