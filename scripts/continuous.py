@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 """ Bare bones script to connect to a Wasatch Photonics device that
 supports the stroker series protocol. Will print version information of
 any device connected.  communication for devices from Wasatch Photonics.
@@ -10,11 +11,11 @@ import logging
 log = logging.getLogger()
 strm = logging.StreamHandler(sys.stderr)
 log.addHandler(strm)
-log.setLevel(logging.WARN)
+log.setLevel(logging.INFO)
 
 graph_available = True
 try:
-    from diagram import DGWrapper
+    from diagram import DGWrapper, DOption, Point
 except ImportError as exc:
     graph_available = False
     log.warn("No diagram module - lineplots disabled.")
@@ -72,11 +73,21 @@ def print_device():
 def print_data(device):
 
     device.set_integration_time(100)
+    device.set_ccd_tec_setpoint(10.0)
+    device.set_ccd_tec_enable(1)
 
-    max_lines = 2000
+    temp_points = []
+    temp_values = []
+
+    max_lines = 20
     for line in range(max_lines):
         data = device.get_line()
         tempc = device.get_ccd_temperature()
+        temp_points.append(tempc)
+        temp_values.append(len(temp_points))
+        if len(temp_points) > 10:
+            temp_points = temp_points[1:]
+            temp_values = temp_values[1:]
 
         points = []
         values = []
@@ -89,9 +100,6 @@ def print_data(device):
             gram = DGWrapper(data=[points, values])
             gram.show()
 
-            print "Temperature: %2.3f" % tempc
-            # Move cursor 11 lines up
-            print '\x1b[12A'
 
 	else:
             avg_data =  sum(data) / len(data)
@@ -99,6 +107,22 @@ def print_data(device):
                   % (min(data), max(data), avg_data)
 
 
+
+        temp_options = DOption()
+        temp_options.mode = "g"
+        temp_options.palette = "blue"
+        temp_options.size = Point([0, 3])
+        temp_gram = DGWrapper(dg_option=temp_options,
+                data=[temp_points, temp_values])
+        temp_gram.show()
+
+        print "Temperature: %2.3f" % tempc
+
+        # Move the cursor back up to overwrite the graph
+        print '\x1b[15A'
+
+    # Move the cursor back down to where the command prompt should be
+    print '\x1b[15B'
 
 
 if __name__ == "__main__":

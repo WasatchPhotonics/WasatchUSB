@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 """ Interface wrapper around the libusb drivers to show stroker protocol
 communication for devices from Wasatch Photonics. Stroker in this case
 is an homage to automotive performance:
@@ -86,18 +87,6 @@ class StrokerProtocolDevice(object):
         log.info("Placeholder disconnect")
         return True
 
-    def get_model_number(self):
-        """ Extract the appropriate field with a control message to the
-        device.
-        """
-        result = self.get_upper_code(0x01)
-        model_number = ""
-        for letter in result[0:15]:
-            model_number += chr(letter)
-
-        model_number = model_number.replace("\x00", "")
-        return model_number
-
 
     def send_code(self, FID_bmRequest, FID_wValue=0):
         """ Perform the control message transfer required to send a
@@ -120,7 +109,7 @@ class StrokerProtocolDevice(object):
         return result
 
 
-    def get_sp_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
+    def get_code(self, FID_bmRequest, FID_wValue=0, FID_wLength=64):
         """ Use the StrokerProtocol (sp), and perform the control
         message transfer required to get a setting from the device.
         """
@@ -139,33 +128,6 @@ class StrokerProtocolDevice(object):
         log.debug("Raw result: [%s]", result)
         return result
 
-    def send_sp_code(self, FID_bmRequest, FID_wValue=0):
-        """ Perform the control message transfer, return the extracted
-        value
-        """
-        FID_bmRequestType = 0x40 # host to device
-        FID_wIndex = 0           # current specification has all index 0
-        FID_wLength = ""
-
-        try:
-            result = self.device.ctrl_transfer(FID_bmRequestType,
-                                               FID_bmRequest,
-                                               FID_wValue,
-                                               FID_wIndex,
-                                               FID_wLength)
-        except Exception as exc:
-            log.critical("Problem with ctrl transfer: %s", exc)
-
-        log.debug("Raw result: [%s]", result)
-        return result
-
-
-    def get_upper_code(self, FID_wValue):
-        """ Convenience function to wrap "upper area" bmRequest feature
-        identification code around the standard get code command.
-        """
-        return self.get_sp_code(FID_bmRequest=0xFF, FID_wValue=FID_wValue)
-
 
     def get_serial_number(self):
         """ Return the serial number portion of the USB descriptor.
@@ -177,13 +139,13 @@ class StrokerProtocolDevice(object):
             serial = usb.util.get_string(self.device,
                                          self.device.iSerialNumber, 256)
         except Exception as exc:
-            log.info("Failure to read langid 256 serial: %s", exc)
+            log.debug("Failure to read langid 256 serial: %s", exc)
 
         try:
             serial = usb.util.get_string(self.device,
                                          self.device.iSerialNumber)
         except Exception as exc:
-            log.info("Failure to read langid none serial: %s", exc)
+            log.debug("Failure to read langid none serial: %s", exc)
 
         return serial
 
@@ -191,7 +153,7 @@ class StrokerProtocolDevice(object):
     def get_integration_time(self):
         """ Read the integration time stored on the device.
         """
-        result = self.get_sp_code(0xBF)
+        result = self.get_code(0xBF)
 
         curr_time = (result[2] * 0x10000) + (result[1] * 0x100) + result[0]
 
@@ -204,7 +166,7 @@ class StrokerProtocolDevice(object):
         First bytes is binary encoded: 0 = 1/2, 1 = 1/4, 2 = 1/8 etc.  second
         byte is the part to the left of the decimal, so 231 is 1e7 is 1.90234375
         """
-        result = self.get_sp_code(0xC5)
+        result = self.get_code(0xC5)
         gain = result[1]
         start_byte = str(result[0])
         for i in range(8):
@@ -236,28 +198,13 @@ class StrokerProtocolDevice(object):
 
         return 0
 
-
-    def get_sensor_line_length(self):
-        """ The line length is encoded as a LSB two byte integer. Where a value
-        of 0, 4 is equivalent to 1024 pixels.
-        """
-        result = self.get_upper_code(0x03)
-        line_length = (result[1] * 256) + result[0]
-        return line_length
-
-    def get_laser_availability(self):
-        """ Laser availability is a 1 or zero in the first byte of the response.
-        """
-        result = self.get_upper_code(0x08)
-        return result[0]
-
     def get_standard_software_code(self):
         """ 0xC0 is not to be confused with the device to host specification in
         the control message. This is a vendor defined opcode for returning the
         software information. Result is Major version, hyphen, minor
         version.
         """
-        result = self.get_sp_code(0xC0)
+        result = self.get_code(0xC0)
         sw_code = "%d-%d" \
                   % (result[0], result[1])
         return sw_code
@@ -267,7 +214,7 @@ class StrokerProtocolDevice(object):
         three bytes plus a hyphen is the major version, then last three
         bytes is the minor.
         """
-        result = self.get_sp_code(0xB4)
+        result = self.get_code(0xB4)
 
 
         chr_fpga_suffix = "%s%s%s" \
@@ -318,7 +265,7 @@ class StrokerProtocolDevice(object):
         result = -273 # The clearly invalid value
 
         try:
-            result = self.get_sp_code(0xD5)
+            result = self.get_code(0xD5)
         except Exction as exc:
             log.critical("Failure reading temperature: %s", exc)
             return result
@@ -349,7 +296,7 @@ class StrokerProtocolDevice(object):
         temperature value.
         """
 
-        result = self.get_sp_code(0xD7)
+        result = self.get_code(0xD7)
 
         log.debug("Plain adc: %s", result)
 
@@ -373,7 +320,7 @@ class StrokerProtocolDevice(object):
     def get_laser_enable(self):
         """ Read the laser enable status from the device.
         """
-        result = self.get_sp_code(0xE2)
+        result = self.get_code(0xE2)
         return result[0]
 
     def set_laser_enable(self, value=0):
@@ -384,11 +331,21 @@ class StrokerProtocolDevice(object):
         result = self.send_code(0xBE, value)
         return result
 
+    def set_ccd_tec_enable(self, value=0):
+        """ WRite one for enable, zero for disable of the ccd tec
+        cooler.
+        """
+        log.debug("Send CCD TEC enable: %s", value)
+        result = self.send_code(0xD6, value)
+
+        log.critical("Double set required, see notes.")
+        result = self.send_code(0xD6, value)
+
     def get_calibration_coeffs(self):
         """ Read the calibration coefficients from the on-board EEPROM.
         """
 
-        eeprom_data = self.get_sp_code(0xA2)
+        eeprom_data = self.get_code(0xA2)
         log.debug("Full eeprom dump: %s", eeprom_data)
 
         c0 = self.decode_eeprom(eeprom_data, width=8, offset=0)
@@ -431,19 +388,10 @@ class StrokerProtocolDevice(object):
             return False
 
         new_point = self.tec_coeff0 + (self.tec_coeff1 * setpoint)
-        new_point = new_point + (self.tec_coeff2 * (setpoint * setpoint))
+        new_point += (self.tec_coeff2 * (setpoint * setpoint))
+        new_point = int(new_point)
 
         log.debug("Setting TEC setpoint to: %s", new_point)
         result = self.send_code(0xD8, new_point)
-        return result
-
-
-    def get_ccd_tec_setpoint(self):
-        """ Read the CCD cooler setpoint stored on the device.
-        """
-        result = self.get_sp_code(0xD9)
-        ccd_tec_setpoint = (result[1] * 256) + result[0]
-
-        log.critical("CCD TEC setpoint: %s", ccd_tec_setpoint)
-        return ccd_tec_setpoint
+        return True
 

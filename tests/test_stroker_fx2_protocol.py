@@ -10,6 +10,7 @@ hardware supports it.
 
 import sys
 import pytest
+import time
 import logging
 log = logging.getLogger()
 
@@ -84,12 +85,11 @@ class TestStrokerProtocol():
         assert device.get_ccd_temperature() >= 1.0
         assert device.get_ccd_temperature() <= 90.0
 
-    def test_set_ccd_tec_setpoint_fails(self, device):
+    def test_set_ccd_tec_setpoint(self, device):
         """ Verify that you can't set an out of range temperature
         setpoint, or a setpoint before TEC coefficients are assigned.
+        The CCD TEC setpoint is essentially a write only value.
         """
-        result = device.get_ccd_tec_setpoint()
-        assert result == 0.0
 
         # Minimum range check
         result = device.set_ccd_tec_setpoint(5.0)
@@ -99,16 +99,47 @@ class TestStrokerProtocol():
         result = device.set_ccd_tec_setpoint(25.0)
         assert result == False
 
-
-    def test_set_get_ccd_tec_setpoint(self, device):
-        result = device.get_ccd_tec_setpoint()
-        assert result == 0.0
-
-        result = device.set_ccd_tec_setpoint(15.0)
+        result = device.set_ccd_tec_setpoint(18.0)
         assert result == True
 
-        result = device.get_ccd_tec_setpoint()
-        assert result == 15.0
+    def test_set_ccd_tec_enable(self, device):
+        # Set the desired setpoint to the lowest part of the range
+        # Verify that it is trending down
+
+
+        result = device.set_ccd_tec_setpoint(10.0)
+        assert result == True
+
+        result = device.set_ccd_tec_enable(1)
+
+        start_temp = device.get_ccd_temperature()
+        delay_count = 0
+        while delay_count < 10:
+            time.sleep(1)
+            cease_temp = device.get_ccd_temperature()
+            log.warn("Cease temp: %s", cease_temp)
+            delay_count += 1
+
+        # turn the cooler off for test cyles
+        result = device.set_ccd_tec_enable(0)
+
+        # ~0.5 degree per second of cooling is the norm in an ~72C
+        # laboratory type environment. That translates to approximately
+        # a 4 degree shift over 10 seconds. Just look for a two degree
+        # shift down and over a given 10 second interval
+        rate = 2
+        assert (cease_temp + rate) < start_temp
+
+        # Re-warming of the unit is significantly slower, so wait an
+        # additional 10 seconds for it to transit back up the range
+        delay_count = 0
+        while delay_count < 20:
+            time.sleep(1)
+            delay_temp = device.get_ccd_temperature()
+            log.warn("Delay cease temp: %s", delay_temp)
+            delay_count += 1
+
+        assert delay_temp > (cease_temp + rate)
 
     def test_get_standard_software_code(self, device):
         result = device.get_standard_software_code()

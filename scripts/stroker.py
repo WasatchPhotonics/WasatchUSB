@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 """ Bare bones script to connect to a Wasatch Photonics device that
 supports the stroker series protocol. Will print version information of
 any device connected.  communication for devices from Wasatch Photonics.
@@ -14,7 +15,7 @@ log.setLevel(logging.WARN)
 
 graph_available = True
 try:
-    from diagram import DGWrapper
+    from diagram import DGWrapper, DOption
 except ImportError as exc:
     graph_available = False
     log.warn("No diagram module - lineplots disabled.")
@@ -57,7 +58,6 @@ def print_device():
 
 def print_data(device):
 
-    device.set_integration_time(100)
     data = device.get_line()
     avg_data =  sum(data) / len(data)
 
@@ -70,8 +70,16 @@ def print_data(device):
         values.append(None)
 
     if graph_available:
+
         gram = DGWrapper(data=[points, values])
         gram.show()
+
+        temp_options = DOption()
+        temp_options.mode = "h"
+        temp_gram = DGWrapper(dg_option=temp_options,
+                data=[points[0:1], values[0:1]])
+        temp_gram.show()
+
     else:
         print "Min: %s Max: %s Avg: %s" \
               % (min(data), max(data), avg_data)
