@@ -3,12 +3,14 @@ WasatchUSB - USB device control from Wasatch Photonics
 This module is intended to provide the absolute bare-minimum, pure
 python communication with a wasatch photonics device board. 
 
+![Continuous demo](/wasatchusb/assets/continuous_demo.gif "Spectra and Temperature")
+
 Feature identification is supported through the scripts/featureid.py file.
 Run this program to dump the current configuration of any feature
 identification protocol device.
 
 All feature identification devices must be controlled through libusb.
-Find the INF files required in:
+Find the INF files required for control on MS Windows in:
 
     WasatchUSB\libusb_drivers\
 
