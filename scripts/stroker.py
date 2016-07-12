@@ -64,7 +64,7 @@ def print_data(device):
     print ""
     points = []
     values = []
-    subsample_size = len(data) / 72
+    subsample_size = len(data) / 80
     for item in data[::subsample_size]:
         points.append(float(item))
         values.append(None)
@@ -73,12 +73,6 @@ def print_data(device):
 
         gram = DGWrapper(data=[points, values])
         gram.show()
-
-        temp_options = DOption()
-        temp_options.mode = "h"
-        temp_gram = DGWrapper(dg_option=temp_options,
-                data=[points[0:1], values[0:1]])
-        temp_gram.show()
 
     else:
         print "Min: %s Max: %s Avg: %s" \

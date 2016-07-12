@@ -71,19 +71,26 @@ def print_device():
     return device
 
 def print_data(device):
-
+    """ Set initial device parameters, loop forever and print each
+    individual spectra, with a trending history of the reported CCD
+    temperature.
+    """
     device.set_integration_time(100)
     device.set_ccd_tec_setpoint(10.0)
     device.set_ccd_tec_enable(1)
 
+    # Temperature data is stored for trending strip chart
     temp_points = []
     temp_values = []
 
-    max_lines = 2000
-    for line in range(max_lines):
-        column_width = 80
+    # selected as an acceptable value for both default terminal sizes
+    # and subsampling of the 1024 (typical) pixels
+    column_width = 80
+
+    while True:
         data = device.get_line()
         tempc = device.get_ccd_temperature()
+
         temp_points.append(tempc)
         temp_values.append(len(temp_points))
         if len(temp_points) > column_width:
@@ -92,15 +99,19 @@ def print_data(device):
 
         points = []
         values = []
+
+        # Primitive sampling
         subsample_size = len(data) / column_width
         for item in data[::subsample_size]:
             points.append(float(item))
             values.append(None)
 
 	if graph_available:
-            gram_option = DOption()
-            gram = DGWrapper(dg_option=gram_option, data=[points, values])
-            gram.show()
+            draw_graphs((points, values), (temp_points, temp_values))
+            print "Temperature: %2.3f" % tempc
+
+            # Move the cursor back up to overwrite the graph
+            print '\x1b[15A'
 
 
 	else:
@@ -108,23 +119,25 @@ def print_data(device):
             print "Min: %s Max: %s Avg: %s" \
                   % (min(data), max(data), avg_data)
 
+    if graph_available:
+        # Move the cursor back down to where the command prompt should be
+        print '\x1b[15B'
 
 
-        temp_options = DOption()
-        temp_options.mode = "g"
-        temp_options.palette = "red"
-        temp_options.size = Point([0, 3])
-        temp_gram = DGWrapper(dg_option=temp_options,
-                data=[temp_points, temp_values])
-        temp_gram.show()
+def draw_graphs(spectra_data, temp_data):
+    """ Build the chart options at each pass, render the data to screen.
+    """
+    gram_option = DOption()
+    gram = DGWrapper(dg_option=gram_option, data=spectra_data)
+    gram.show()
 
-        print "Temperature: %2.3f" % tempc
-
-        # Move the cursor back up to overwrite the graph
-        print '\x1b[15A'
-
-    # Move the cursor back down to where the command prompt should be
-    print '\x1b[15B'
+    temp_options = DOption()
+    temp_options.mode = "g"
+    temp_options.palette = "red"
+    temp_options.size = Point([0, 3])
+    temp_gram = DGWrapper(dg_option=temp_options,
+                          data=temp_data)
+    temp_gram.show()
 
 
 if __name__ == "__main__":

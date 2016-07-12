@@ -53,3 +53,7 @@ You will see output similar to:
 
 Older devices are supported through the Stroker Protocol interface. Stroker in this
 context refers to automotive performance: https://en.wikipedia.org/wiki/Stroker_kit
+
+
+Installation
+---------------
