@@ -1,14 +1,15 @@
 WasatchUSB - USB device control from Wasatch Photonics 
  
 This module is intended to provide the absolute bare-minimum, pure
-python communication with a wasatch photonics device board. 
+python communication with a wasatch photonics device board. Also 
+included is a set of command line tools for visualizing data from
+the spectrometers.
 
 ![Continuous demo](/wasatchusb/assets/continuous_demo.gif "Spectra and Temperature")
 
 Feature identification is supported through the scripts/featureid.py file.
 Run this program to dump the current configuration of any feature
 identification protocol device.
-
 
 Usage narrative:
 
@@ -48,8 +49,7 @@ context refers to automotive performance: https://en.wikipedia.org/wiki/Stroker_
 ##Software Installation
 ---------------
 
-Line graphs are shown in a terminal on Linux. For the command line
-visualizations, make sure you have the following prerequisites:
+For the command line visualizations, make sure you have the following prerequisites:
 
 Library-enabled fork of the excellent [diagram](https://github.com/WasatchPhotonics/diagram) package.
 
