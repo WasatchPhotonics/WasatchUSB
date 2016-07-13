@@ -9,18 +9,8 @@ Feature identification is supported through the scripts/featureid.py file.
 Run this program to dump the current configuration of any feature
 identification protocol device.
 
-All feature identification devices must be controlled through libusb.
-Find the INF files required for control on MS Windows in:
-
-    WasatchUSB\libusb_drivers\
 
 Usage narrative:
-
-Plug in your Feature Identification protocol supporting device from
-Wasatch Photonics into your system. On MS-Windows, wait for the device
-to appear in Device Manager with an unknown driver.  Right click the
-device, select Update Driver, and point it to the
-WasatchUSB\libusb_drivers\ directory.
 
 Open a command prompt, and run:
 
@@ -55,5 +45,55 @@ Older devices are supported through the Stroker Protocol interface. Stroker in t
 context refers to automotive performance: https://en.wikipedia.org/wiki/Stroker_kit
 
 
-Installation
+##Software Installation
 ---------------
+
+Line graphs are shown in a terminal on Linux. For the command line
+visualizations, make sure you have the following prerequisites:
+
+Library-enabled fork of the excellent [diagram](https://github.com/WasatchPhotonics/diagram) package.
+
+A UTF-8 enabled font and terminal. The screen capture was created using
+Source Code Pro and gnome-terminal.
+
+Baseline tests are available without the spectra and cooling
+visualization on both MS Windows and Linux. First, follow the
+instructions in the Device Configuration section below. Run the tests
+specific to your unit with the commands:
+
+    git clone https://github.com/WasatchPhotonics/WasatchUSB
+    # optional installation of diagram package 
+
+    cd WasatchUSB
+    python setup.py develop
+
+    # Display basic device data
+    python -u scripts/stroker.py
+
+    # Run all verification scripts
+    py.test tests/test_stroker_fx2_protocol.py
+
+##Device Configuration
+--------------------
+
+### MS Windows
+All feature identification devices must be controlled through libusb.
+Find the INF files required for control on MS Windows in:
+
+    WasatchUSB\libusb_drivers\
+
+Plug in your Feature Identification protocol supporting device from
+Wasatch Photonics into your system. On MS-Windows, wait for the device
+to appear in Device Manager with an unknown driver.  Right click the
+device, select Update Driver, and point it to the
+WasatchUSB\libusb_drivers\ directory.
+
+### Linux
+Enable access to the wasatch device in userland. On Fedora Core 24, this
+is done with:
+
+sudo cp udev_rules/99-wasatch.rules /etc/udev/rules.d/
+(power cycle the usb device)
+
+
+

@@ -10,7 +10,7 @@ config = {
     'download_url': 'https://github.com/nharringtonwasatch/WasatchUSB',
     'author_email': 'nharrington@wasatchphotonics.com',
     'version': '1.0.1',
-    'install_requires': ['phidgeter', 'pyusb', 'diagram'],
+    'install_requires': ['phidgeter', 'pyusb'],
     'packages': ['wasatchusb'],
     'scripts': [],
     'name': 'WasatchUSB'

@@ -131,9 +131,9 @@ class TestStrokerProtocol():
         assert (cease_temp + rate) < start_temp
 
         # Re-warming of the unit is significantly slower, so wait an
-        # additional 10 seconds for it to transit back up the range
+        # additional 20 seconds for it to transit back up the range
         delay_count = 0
-        while delay_count < 20:
+        while delay_count < 30:
             time.sleep(1)
             delay_temp = device.get_ccd_temperature()
             log.warn("Delay cease temp: %s", delay_temp)
