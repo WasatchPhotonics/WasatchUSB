@@ -92,8 +92,9 @@ WasatchUSB\libusb_drivers\ directory.
 Enable access to the wasatch device in userland. On Fedora Core 24, this
 is done with:
 
-sudo cp udev_rules/99-wasatch.rules /etc/udev/rules.d/
-(power cycle the usb device)
+    sudo cp udev_rules/99-wasatch.rules /etc/udev/rules.d/
+
+Then power cycle the usb device.
 
 
 
