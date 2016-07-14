@@ -72,7 +72,7 @@ def print_device():
 
 def print_data(device):
     """ Set initial device parameters, loop forever and print each
-    individual spectra, with a trending history of the reported CCD
+    individual spectrum, with a trending history of the reported CCD
     temperature.
     """
     device.set_integration_time(100)
@@ -124,11 +124,11 @@ def print_data(device):
         print '\x1b[15B'
 
 
-def draw_graphs(spectra_data, temp_data):
+def draw_graphs(spectrum_data, temp_data):
     """ Build the chart options at each pass, render the data to screen.
     """
     gram_option = DOption()
-    gram = DGWrapper(dg_option=gram_option, data=spectra_data)
+    gram = DGWrapper(dg_option=gram_option, data=spectrum_data)
     gram.show()
 
     temp_options = DOption()

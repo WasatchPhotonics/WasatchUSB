@@ -5,7 +5,7 @@ python communication with a wasatch photonics device board. Also
 included is a set of command line tools for visualizing data from
 the spectrometers.
 
-![Continuous demo](/wasatchusb/assets/continuous_demo.gif "Spectra and Temperature")
+![Continuous demo](/wasatchusb/assets/continuous_demo.gif "Spectrum and Temperature")
 
 Feature identification is supported through the scripts/featureid.py file.
 Run this program to dump the current configuration of any feature
@@ -56,7 +56,7 @@ Library-enabled fork of the excellent [diagram](https://github.com/WasatchPhoton
 A UTF-8 enabled font and terminal. The screen capture was created using
 Source Code Pro and gnome-terminal.
 
-Baseline tests are available without the spectra and cooling
+Baseline tests are available without the spectrum and cooling
 visualization on both MS Windows and Linux. First, follow the
 instructions in the Device Configuration section below. Run the tests
 specific to your unit with the commands:

@@ -3,8 +3,9 @@ includes nearly everything designed and created before 2016.
 
 Use caution with these test cases, as certain feature communication
 attempts and configurations are unavailable on certain devices. Lockups
-will be common. Use the "Feature Identification" series of tests and
-protocol definitions for more reliable communication - if you're
+will be common if you attempt to access functionality that is not
+present on the device. Use the "Feature Identification" series of tests
+and protocol definitions for more reliable communication - if your
 hardware supports it.
 """
 
@@ -123,10 +124,11 @@ class TestStrokerProtocol():
         # turn the cooler off for test cyles
         result = device.set_ccd_tec_enable(0)
 
-        # ~0.5 degree per second of cooling is the norm in an ~72C
-        # laboratory type environment. That translates to approximately
-        # a 4 degree shift over 10 seconds. Just look for a two degree
-        # shift down and over a given 10 second interval
+        # ~0.5 degree per second of cooling is the norm in an ~72F
+        # laboratory type environment. This test looks for a two degree
+        # shift down over a given 10 second interval, which should
+        # provide enough marging to prove the cooler is functioning in a
+        # variety of environments.
         rate = 2
         assert (cease_temp + rate) < start_temp
 

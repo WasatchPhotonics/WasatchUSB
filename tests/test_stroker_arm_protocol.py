@@ -3,8 +3,10 @@ includes nearly everything designed and created before 2016.
 
 Use caution with these test cases, as certain feature communication
 attempts and configurations are unavailable on certain devices. Lockups
-will be common. Use the "Feature Identification" series of tests and
-protocol definitions for more reliable communication.
+will be common if you attempt to access functionality that is not
+present on the device. Use the "Feature Identification" series of tests
+and protocol definitions for more reliable communication - if your
+hardware supports it.
 """
 
 import sys
