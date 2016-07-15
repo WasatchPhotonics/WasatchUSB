@@ -14,24 +14,43 @@ log = logging.getLogger(__name__)
 
 class ListDevices(object):
     """ Create a list of vendor id, product id pairs of any device on
-    the bus with the 0x24AA VID.
+    the bus with the 0x24AA VID. Explicitly reject the newer feature
+    identification devices.
     """
     def __init__(self):
         log.debug("init")
 
     def get_all(self, vid=0x24aa):
         """ Return the full list of devices that match the vendor id.
+        Explicitly reject the feature identification codes
         """
         list_devices = []
 
         for bus in usb.busses():
             for device in bus.devices:
-                if device.idVendor == vid:
-                    single = (hex(device.idVendor),
-                              hex(device.idProduct))
+
+                single = self.device_match(device, vid)
+
+                if single is not None:
                     list_devices.append(single)
 
         return list_devices
+
+    def device_match(self, device, vid):
+        """ Match vendor id and rejectable feature identification
+        devices.
+        """
+        if device.idVendor != vid:
+            return None
+
+        if device.idProduct == 0x1000 or \
+           device.idProduct == 0x2000 or \
+           device.idProduct == 0x3000 or \
+           device.idProduct == 0x4000:
+               return None
+
+        single = (hex(device.idVendor), hex(device.idProduct))
+        return single
 
 class StrokerProtocolDevice(object):
     """ Provide function wrappers for all of the common tasks associated

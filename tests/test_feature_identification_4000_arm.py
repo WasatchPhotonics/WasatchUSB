@@ -8,17 +8,21 @@ microcontroller.
 import sys
 import pytest
 import logging
-log = logging.getLogger(__name__)
+log = logging.getLogger()
 
+frmt = logging.Formatter("%(name)s %(levelname)-8s %(message)s")
+log.setLevel(level=logging.INFO)
 strm = logging.StreamHandler(sys.stdout)
+strm.setFormatter(frmt)
 log.addHandler(strm)
+
 
 # Change these parameters to match the device under test
 DEVICE_PID = 0x4000
 DEVICE_SERIAL = "SVISNIR-00034"
-MODEL_NUMBER = "785"
+MODEL_NUMBER = "785L"
 FPGA_REVISION = "008-007"
-SWCODE_REVISION = "10.0.0.3"
+SWCODE_REVISION = "10.0.0.2"
 
 
 class TestFeatureIdentification():
@@ -105,14 +109,26 @@ class TestFeatureIdentification():
         result = device.get_fpga_revision()
         assert result == FPGA_REVISION
 
-    def test_get_arm_single_line_of_data(self, device):
-        result = device.get_line()
-        assert len(result) == 1024
-        assert min(result) >= 10
-        assert max(result) <= 65535
+    def test_get_arm_multiple_lines(self, device):
+        max_count = 0
+        while max_count < 10:
+            result = device.get_line()
+            assert len(result) == 1024
+            assert min(result) >= 10
+            assert max(result) <= 65535
 
-        average = sum(result) / len(result)
-        assert average >= 20
+            average = sum(result) / len(result)
+            assert average >= 20
+            max_count += 1
+
+    #def test_get_arm_single_line_of_data(self, device):
+        #result = device.get_line()
+        #assert len(result) == 1024
+        #assert min(result) >= 10
+        #assert max(result) <= 65535
+#
+        #average = sum(result) / len(result)
+        #assert average >= 20
 
     def test_get_arm_integration_time(self, device):
         assert device.get_integration_time() == 0

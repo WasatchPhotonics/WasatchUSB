@@ -75,9 +75,9 @@ def print_data(device):
     individual spectrum, with a trending history of the reported CCD
     temperature.
     """
-    device.set_integration_time(100)
-    device.set_ccd_tec_setpoint(10.0)
-    device.set_ccd_tec_enable(1)
+    #device.set_integration_time(100)
+    #device.set_ccd_tec_setpoint(10.0)
+    #device.set_ccd_tec_enable(1)
 
     # Temperature data is stored for trending strip chart
     temp_points = []
@@ -89,7 +89,8 @@ def print_data(device):
 
     while True:
         data = device.get_line()
-        tempc = device.get_ccd_temperature()
+        #tempc = device.get_ccd_temperature()
+        tempc = 1.0
 
         temp_points.append(tempc)
         temp_values.append(len(temp_points))
