@@ -121,14 +121,14 @@ class TestFeatureIdentification():
             assert average >= 20
             max_count += 1
 
-    #def test_get_arm_single_line_of_data(self, device):
-        #result = device.get_line()
-        #assert len(result) == 1024
-        #assert min(result) >= 10
-        #assert max(result) <= 65535
-#
-        #average = sum(result) / len(result)
-        #assert average >= 20
+    def test_get_arm_single_line_of_data(self, device):
+        result = device.get_line()
+        assert len(result) == 1024
+        assert min(result) >= 10
+        assert max(result) <= 65535
+
+        average = sum(result) / len(result)
+        assert average >= 20
 
     def test_get_arm_integration_time(self, device):
         assert device.get_integration_time() == 0
@@ -138,3 +138,7 @@ class TestFeatureIdentification():
         assert device.get_integration_time() == 0
         device.set_integration_time(100)
         assert device.get_integration_time() == 100
+
+    def test_showing_0xad_timeout(self, device):
+            result = device.get_line()
+
