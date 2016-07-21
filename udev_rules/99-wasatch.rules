@@ -12,3 +12,5 @@ SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="40
 SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="0009", MODE="666"
 # Stroker Protocol FX2
 SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="0028", MODE="666"
+# Ancient "HighSpeed" FX2
+SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="0002", MODE="666"

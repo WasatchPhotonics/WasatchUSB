@@ -299,7 +299,7 @@ class Device(object):
         back from the bulk endpoint.
         """
 
-        result = self.send_code(0xAD)
+        result = self.send_code(0xAD, FID_data_or_wLength="00000000")
 
         line_buffer = 2048 # 1024 16bit pixels
         if self.pid == 0x2000:
