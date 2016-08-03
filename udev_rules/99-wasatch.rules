@@ -14,3 +14,5 @@ SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="00
 SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="0028", MODE="666"
 # Ancient "HighSpeed" FX2
 SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="0002", MODE="666"
+# 785LC laser with cooling
+SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="24aa", ATTRS{idProduct}=="0014", MODE="666"

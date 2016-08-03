@@ -75,7 +75,7 @@ def print_data(device):
     individual spectrum, with a trending history of the reported CCD
     temperature.
     """
-    device.set_integration_time(100)
+    device.set_integration_time(10)
     init_tempc = None
     try:
         device.set_ccd_tec_setpoint(10.0)
@@ -83,6 +83,12 @@ def print_data(device):
         init_tempc = device.get_ccd_temperature()
     except AttributeError as exc:
         log.warn("No cooler [%s]", exc)
+
+    try:
+        device.set_laser_enable(1)
+    except AttributeError as exc:
+        log.warn("No laser [%s]", exc)
+
 
 
     # Temperature data is stored for trending strip chart
@@ -92,6 +98,7 @@ def print_data(device):
     # selected as an acceptable value for both default terminal sizes
     # and subsampling of the 1024 (typical) pixels
     column_width = 80
+    clear_height = 15
 
     while True:
         data = device.get_line()
@@ -119,7 +126,7 @@ def print_data(device):
             print "Temperature: %2.3f" % tempc
 
             # Move the cursor back up to overwrite the graph
-            print '\x1b[15A'
+            print '\x1b[%sA' % clear_height
 
 
 	else:
@@ -129,7 +136,7 @@ def print_data(device):
 
     if graph_available:
         # Move the cursor back down to where the command prompt should be
-        print '\x1b[15B'
+        print '\x1b[%sB' % clear_height
 
 
 def draw_graphs(spectrum_data, temp_data):
