@@ -97,3 +97,14 @@ class TestFeatureIdentification():
 
         average = sum(result) / len(result)
         assert average >= 20
+
+    def test_set_integration_time(self, device):
+        # device defaults to 0 on power up
+        assert device.get_integration_time() == 0
+        device.set_integration_time(100)
+        assert device.get_integration_time() == 100
+
+
+    def test_get_ccd_temperature(self, device):
+        assert device.get_ccd_temperature() >= 1.0
+        assert device.get_ccd_temperature() <= 90.0

@@ -351,7 +351,7 @@ class StrokerProtocolDevice(object):
         return result
 
     def set_ccd_tec_enable(self, value=0):
-        """ WRite one for enable, zero for disable of the ccd tec
+        """ Write one for enable, zero for disable of the ccd tec
         cooler.
         """
         log.debug("Send CCD TEC enable: %s", value)

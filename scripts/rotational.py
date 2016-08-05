@@ -24,12 +24,6 @@ except ImportError as exc:
 
 from wasatchusb import stroker_protocol, feature_identification
 
-# selected as an acceptable value for both default terminal sizes
-# and subsampling of the 1024 (typical) pixels
-column_width = 80
-column_height = 10
-clear_height = 5 # margin for legends
-
 
 def print_device():
     """ Connect to the first discovered stroker protocol or feature
@@ -69,10 +63,10 @@ def print_device():
         device = stroker_protocol.StrokerProtocolDevice(pid=last_pid)
     device.connect()
     print "Serial:        %s" % device.get_serial_number()
-    #print "SWCode:        %s" % device.get_standard_software_code()
-    #print "FPGARev:       %s" % device.get_fpga_revision()
-    #print "Gain:          %s" % device.get_ccd_gain()
-    #print "Int Time:      %s" % device.get_integration_time()
+    print "SWCode:        %s" % device.get_standard_software_code()
+    print "FPGARev:       %s" % device.get_fpga_revision()
+    print "Gain:          %s" % device.get_ccd_gain()
+    print "Int Time:      %s" % device.get_integration_time()
 
     return device
 
@@ -81,11 +75,11 @@ def print_data(device):
     individual spectrum, with a trending history of the reported CCD
     temperature.
     """
-    device.set_integration_time(100)
+    device.set_integration_time(1000)
     init_tempc = None
     try:
-        #device.set_ccd_tec_setpoint(10.0)
-        #device.set_ccd_tec_enable(1)
+        device.set_ccd_tec_setpoint(10.0)
+        device.set_ccd_tec_enable(1)
         init_tempc = device.get_ccd_temperature()
     except AttributeError as exc:
         log.warn("No cooler [%s]", exc)
@@ -100,6 +94,11 @@ def print_data(device):
     # Temperature data is stored for trending strip chart
     temp_points = []
     temp_values = []
+
+    # selected as an acceptable value for both default terminal sizes
+    # and subsampling of the 1024 (typical) pixels
+    column_width = 200
+    clear_height = 95
 
     while True:
         data = device.get_line()
@@ -127,7 +126,7 @@ def print_data(device):
             print "Temperature: %2.3f" % tempc
 
             # Move the cursor back up to overwrite the graph
-            print '\x1b[%sA' % (column_height + clear_height)
+            print '\x1b[%sA' % clear_height
 
 
 	else:
@@ -144,7 +143,8 @@ def draw_graphs(spectrum_data, temp_data):
     """ Build the chart options at each pass, render the data to screen.
     """
     gram_option = DOption()
-    gram_option.size = Point([column_width, column_height])
+    #gram_option.palette = "re"
+    gram_option.size = Point([200, 90])
     gram = DGWrapper(dg_option=gram_option, data=spectrum_data)
     gram.show()
 

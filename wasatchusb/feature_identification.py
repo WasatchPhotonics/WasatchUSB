@@ -6,9 +6,18 @@ import usb
 import usb.core
 import usb.util
 import struct
+import math
+import sys
 
 import logging
 log = logging.getLogger(__name__)
+
+frmt = logging.Formatter("%(name)s %(levelname)-8s %(message)s")
+log.setLevel(level=logging.INFO)
+strm = logging.StreamHandler(sys.stdout)
+strm.setFormatter(frmt)
+log.addHandler(strm)
+
 
 class ListDevices(object):
     def __init__(self):
@@ -158,7 +167,7 @@ class Device(object):
         except Exception as exc:
             log.critical("Problem with ctrl transfer: %s", exc)
 
-        log.debug("Raw result: [%s]", result)
+        log.debug("Send Raw result: [%s]", result)
         return result
 
 
@@ -179,7 +188,7 @@ class Device(object):
         except Exception as exc:
             log.critical("Problem with ctrl transfer: %s", exc)
 
-        log.debug("Raw result: [%s]", result)
+        log.debug("Get Raw result: [%s]", result)
         return result
 
     def get_upper_code(self, FID_wValue, FID_wIndex=0):
@@ -208,7 +217,9 @@ class Device(object):
         """
         result = self.get_code(0xBF)
 
+        log.warn("Get int Raw result: %s", result)
         curr_time = (result[2] * 0x10000) + (result[1] * 0x100) + result[0]
+        log.warn("GETINT: %s", curr_time)
 
         return curr_time
 
@@ -324,3 +335,29 @@ class Device(object):
         return result
 
 
+    def get_ccd_temperature(self):
+        """ Read the Analog to Digital conversion value from the device.
+        Apply formula to convert AD value to temperature, return raw
+        temperature value.
+        """
+
+        result = self.get_code(0xD7)
+
+        log.debug("Plain adc: %s", result)
+
+        # Swap endianness of raw ADC value
+        adc_value  = float(result[1] + (result[0] * 256))
+
+        # Convert to voltage (12 bit)
+        voltage    = float((adc_value / 4096.0) * 1.5)
+
+        # Convert to resistance
+        resistance = 10000 * voltage
+        resistance = resistance / (2 - voltage)
+
+        # Find the log of the resistance with a 10kOHM resistor
+        logVal     = math.log( resistance / 10000 )
+        insideMain = float(logVal + ( 3977.0 / (25 + 273.0) ))
+        tempc      = float( (3977.0 / insideMain) -273.0 )
+
+        return tempc
