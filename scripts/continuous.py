@@ -69,10 +69,10 @@ def print_device():
         device = stroker_protocol.StrokerProtocolDevice(pid=last_pid)
     device.connect()
     print "Serial:        %s" % device.get_serial_number()
-    #print "SWCode:        %s" % device.get_standard_software_code()
-    #print "FPGARev:       %s" % device.get_fpga_revision()
-    #print "Gain:          %s" % device.get_ccd_gain()
-    #print "Int Time:      %s" % device.get_integration_time()
+    print "SWCode:        %s" % device.get_standard_software_code()
+    print "FPGARev:       %s" % device.get_fpga_revision()
+    print "Gain:          %s" % device.get_ccd_gain()
+    print "Int Time:      %s" % device.get_integration_time()
 
     return device
 
@@ -81,7 +81,7 @@ def print_data(device):
     individual spectrum, with a trending history of the reported CCD
     temperature.
     """
-    device.set_integration_time(100)
+    device.set_integration_time(3)
     init_tempc = None
     try:
         #device.set_ccd_tec_setpoint(10.0)
