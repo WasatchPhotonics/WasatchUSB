@@ -15,8 +15,8 @@ log.addHandler(strm)
 
 # Change these parameters to match the device under test
 DEVICE_PID = 0x1000
-DEVICE_SERIAL = "SVISNIR-00034"
-MODEL_NUMBER = "VISNIR"
+DEVICE_SERIAL = "S785LC-00047"
+MODEL_NUMBER = "785LC"
 FPGA_REVISION = "026-007"
 SWCODE_REVISION = "10.0.0.0"
 

@@ -84,8 +84,8 @@ def print_data(device):
     device.set_integration_time(3)
     init_tempc = None
     try:
-        #device.set_ccd_tec_setpoint(10.0)
-        #device.set_ccd_tec_enable(1)
+        device.set_ccd_tec_setpoint(10.0)
+        device.set_ccd_tec_enable(1)
         init_tempc = device.get_ccd_temperature()
     except AttributeError as exc:
         log.warn("No cooler [%s]", exc)
