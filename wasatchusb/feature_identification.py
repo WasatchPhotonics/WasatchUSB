@@ -43,6 +43,9 @@ class Device(object):
         self.vid = vid
         self.pid = pid
         self.device = None
+        self.tec_coeff0 = 3566.62
+        self.tec_coeff1 = -143.543
+        self.tec_coeff2 = -0.324723
 
     def connect(self):
         """ Attempt to connect to the specified device. Log any failures and
@@ -217,9 +220,7 @@ class Device(object):
         """
         result = self.get_code(0xBF)
 
-        log.warn("Get int Raw result: %s", result)
         curr_time = (result[2] * 0x10000) + (result[1] * 0x100) + result[0]
-        log.warn("GETINT: %s", curr_time)
 
         return curr_time
 
@@ -361,3 +362,47 @@ class Device(object):
         tempc      = float( (3977.0 / insideMain) -273.0 )
 
         return tempc
+
+    def set_ccd_tec_setpoint(self, setpoint):
+        """ Attempt to set the CCD cooler setpoint. Verify that it is
+        within an acceptable range. Ideally this is to prevent
+        condensation and other issues. This value is a default and is
+        hugely dependent on the environmental conditions.
+        """
+
+        setpoint_min = 10
+        setpoint_max = 20
+        ok_range = "%s,%s" % (setpoint_min, setpoint_max)
+        if setpoint < setpoint_min:
+            log.critical("TEC setpoint out of range (%s)", ok_range)
+            return False
+
+        if setpoint > setpoint_max:
+            log.critical("TEC setpoint out of range (%s)", ok_range)
+            return False
+
+        new_point = self.tec_coeff0 + (self.tec_coeff1 * setpoint)
+        new_point += (self.tec_coeff2 * (setpoint * setpoint))
+        new_point = int(new_point)
+
+        log.debug("Setting TEC setpoint to: %s", new_point)
+        result = self.send_code(0xD8, new_point)
+        return True
+
+    def set_ccd_tec_enable(self, value=0):
+        """ Write one for enable, zero for disable of the ccd tec
+        cooler.
+        """
+        log.debug("Send CCD TEC enable: %s", value)
+        result = self.send_code(0xD6, value)
+
+        log.critical("Double set required, see notes.")
+        result = self.send_code(0xD6, value)
+
+    def set_laser_enable(self, value=0):
+        """ Write one for enable, zero for disable of laser on the
+        device.
+        """
+        log.debug("Send laser enable: %s", value)
+        result = self.send_code(0xBE, value)
+        return result

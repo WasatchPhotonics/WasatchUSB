@@ -144,8 +144,7 @@ def draw_graphs(spectrum_data, temp_data):
     """ Build the chart options at each pass, render the data to screen.
     """
     gram_option = DOption()
-    gram_option.size = Point([column_width, column_height])
-    gram = DGWrapper(dg_option=gram_option, data=spectrum_data)
+    gram = DGWrapper(data=spectrum_data)
     gram.show()
 
     temp_options = DOption()

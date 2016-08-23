@@ -107,4 +107,5 @@ class TestFeatureIdentification():
 
     def test_get_ccd_temperature(self, device):
         assert device.get_ccd_temperature() >= 1.0
+        assert device.get_ccd_temperature() >= 1.0
         assert device.get_ccd_temperature() <= 90.0
