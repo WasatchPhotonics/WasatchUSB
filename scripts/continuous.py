@@ -76,6 +76,16 @@ def print_device():
 
     return device
 
+
+def subsample(data, sample_size):
+    """ From: http://stackoverflow.com/questions/10847660/\
+            subsampling-averaging-over-a-numpy-array?rq=1
+    """
+    # use 3 for triplets, etc.
+    samples = list(zip(*[iter(data)]*sample_size))
+    return map(lambda x:sum(x)/float(len(x)), samples)
+
+
 def print_data(device):
     """ Set initial device parameters, loop forever and print each
     individual spectrum, with a trending history of the reported CCD
@@ -96,7 +106,6 @@ def print_data(device):
         log.warn("No laser [%s]", exc)
 
 
-
     # Temperature data is stored for trending strip chart
     temp_points = []
     temp_values = []
@@ -113,14 +122,9 @@ def print_data(device):
             temp_points = temp_points[1:]
             temp_values = temp_values[1:]
 
-        points = []
         values = []
-
-        # Primitive sampling
         subsample_size = len(data) / column_width
-        for item in data[::subsample_size]:
-            points.append(float(item))
-            values.append(None)
+        points = subsample(data, subsample_size)
 
 	if graph_available:
             draw_graphs((points, values), (temp_points, temp_values))
