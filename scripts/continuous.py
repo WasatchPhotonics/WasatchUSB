@@ -99,6 +99,8 @@ def print_data(device):
         init_tempc = device.get_ccd_temperature()
     except AttributeError as exc:
         log.warn("No cooler [%s]", exc)
+    except ValueError as exc:
+        log.warn("Cooler fail: %s", exc)
 
     try:
         device.set_laser_enable(1)
