@@ -58,6 +58,10 @@ class SimulatorApplication(object):
         parser.add_argument("-d", "--delay", type=int,
                             default=1, help=delay_str)
 
+        delay_str = "Specify all OFF or ON"
+        parser.add_argument("-m", "--mode", type=str,
+                            default="OFF", help=delay_str)
+
         return parser
 
 
@@ -66,8 +70,16 @@ class SimulatorApplication(object):
         line inputs.
         """
         self.devices = [1, 2, 3, 4, 5, 6, 7, 8]
-        self.set_all("OFF")
-        self.cycle_group(self.args.iterations, self.args.delay)
+        if self.args.mode == "ON":
+            self.set_all("ON")
+
+        elif self.args.mode == "OFF":
+            self.set_all("OFF")
+
+        else:
+            self.devices = [1, 2, 3, 4, 5, 6, 7, 8]
+            self.set_all("OFF")
+            self.cycle_group(self.args.iterations, self.args.delay)
         self.closeEvent()
 
     def set_all(self, status="OFF"):
