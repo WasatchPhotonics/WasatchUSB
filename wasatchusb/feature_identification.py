@@ -19,7 +19,7 @@ strm.setFormatter(frmt)
 log.addHandler(strm)
 
 # Seconds to wait before host os times out on ctrl transfer
-USB_TIMEOUT = 1000
+USB_TIMEOUT = 60000
 
 class ListDevices(object):
     def __init__(self):
