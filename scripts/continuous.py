@@ -128,7 +128,7 @@ def print_data(device):
         subsample_size = len(data) / column_width
         points = subsample(data, subsample_size)
 
-	if graph_available:
+        if graph_available:
             draw_graphs((points, values), (temp_points, temp_values))
             print "Temperature: %2.3f" % tempc
 
@@ -136,7 +136,7 @@ def print_data(device):
             print '\x1b[%sA' % (column_height + clear_height)
 
 
-	else:
+        else:
             avg_data =  sum(data) / len(data)
             print "Min: %s Max: %s Avg: %s" \
                   % (min(data), max(data), avg_data)
