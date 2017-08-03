@@ -396,9 +396,6 @@ class Device(object):
         log.debug("Send CCD TEC enable: %s", value)
         result = self.send_code(0xD6, value)
 
-        log.critical("Double set required, see notes.")
-        result = self.send_code(0xD6, value)
-
     def set_laser_enable(self, value=0):
         """ Write one for enable, zero for disable of laser on the
         device.
@@ -406,3 +403,19 @@ class Device(object):
         log.debug("Send laser enable: %s", value)
         result = self.send_code(0xBE, value)
         return result
+
+    def get_trigger_source(self):
+        """ Read the trigger source setting from the device. 0=internal,
+        1=external. Use caution when interpreting the larger behavior of
+        the device as ARM and FX2 implementations differ as of
+        2018-08-02
+        """
+
+        result = self.get_code(0xD3)
+        return result[0]
+
+    def set_trigger_source(self, value):
+        """ 0 = internal, 1 = external. See the notes above for details.
+        """
+        log.debug("Set CCD trigger to: %s", value)
+        result = self.send_code(0xD2, value)

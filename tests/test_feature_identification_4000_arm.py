@@ -5,7 +5,7 @@ This particular model is the 0x4000 PID which has an ARM
 microcontroller.
 """
 
-import sys
+import sys, time
 import pytest
 import logging
 log = logging.getLogger()
@@ -141,4 +141,23 @@ class TestFeatureIdentification():
 
     def test_showing_0xad_timeout(self, device):
             result = device.get_line()
+
+
+    def test_arm_trigger(self, device):
+        result_set = device.set_trigger_source(0)
+        time.sleep(1)
+
+        trig_stat = device.get_trigger_source()
+        assert trig_stat == 0
+        time.sleep(1)
+
+        result_set = device.set_trigger_source(1)
+        time.sleep(1)
+
+        trig_stat = device.get_trigger_source()
+        assert trig_stat == 1
+        time.sleep(1)
+
+
+
 

@@ -1,5 +1,7 @@
 """ power_control - cycle the power of various devices connected to a
-web power switch.
+web power switch:
+    http://www.digital-loggers.com/lpc.html
+
 """
 
 import sys, time, random
@@ -13,6 +15,8 @@ frmt = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
 strm = logging.StreamHandler(sys.stdout)
 strm.setFormatter(frmt)
 log.addHandler(strm)
+
+TIMEOUT=1.0
 
 import signal
 def signal_handler(signal, frame):
@@ -58,9 +62,14 @@ class SimulatorApplication(object):
         parser.add_argument("-d", "--delay", type=int,
                             default=1, help=delay_str)
 
-        delay_str = "Specify all OFF or ON"
+        mode_str = "Specify all OFF or ON"
         parser.add_argument("-m", "--mode", type=str,
-                            default="OFF", help=delay_str)
+                            default="NONE", help=mode_str)
+
+
+        outlet_str = "Specify a specific outlet"
+        parser.add_argument("-o", "--outlet", type=str,
+                            default="NONE", help=outlet_str)
 
         return parser
 
@@ -70,16 +79,30 @@ class SimulatorApplication(object):
         line inputs.
         """
         self.devices = [1, 2, 3, 4, 5, 6, 7, 8]
+
+        # Turn all ON, or just an individual
         if self.args.mode == "ON":
-            self.set_all("ON")
+            if self.args.outlet == "NONE":
+                self.set_all("ON")
+            else:
+                self.send(self.args.outlet, self.args.mode)
 
+
+        # Turn all OFF, or just an individual
         elif self.args.mode == "OFF":
-            self.set_all("OFF")
+            if self.args.outlet == "NONE":
+                self.set_all("OFF")
+            else:
+                self.send(self.args.outlet, self.args.mode)
 
-        else:
-            self.devices = [1, 2, 3, 4, 5, 6, 7, 8]
+        # Otherwise, cycle the number of iterations
+        elif self.args.mode == "NONE":
             self.set_all("OFF")
             self.cycle_group(self.args.iterations, self.args.delay)
+
+        else:
+            self.log.warn("Unknown specification")
+
         self.closeEvent()
 
     def set_all(self, status="OFF"):
@@ -89,9 +112,12 @@ class SimulatorApplication(object):
             time.sleep(0.1)
 
     def send(self, index, string):
+        # Livin on the edge
         prefix = 'http://admin:81265889@10.0.0.90/outlet?'
         cmd = "%s%s=%s" % (prefix, index, string)
-        result = requests.get(cmd)
+        log.debug("FULL: [%s]", cmd)
+        log.info("OUTLET: %s: %s", index, string)
+        result = requests.get(cmd, timeout=TIMEOUT)
 
 
     def cycle_group(self, iterations, delay):
@@ -99,6 +125,7 @@ class SimulatorApplication(object):
         it's status, wait, then repeat.
         """
         delays = [1, 10, 30, 60, 120]
+        delays = [1, 10, 30, 10, 1]
         for count in range(iterations):
             outlet = random.choice(self.devices)
 
