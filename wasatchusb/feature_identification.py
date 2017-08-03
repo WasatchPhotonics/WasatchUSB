@@ -18,6 +18,8 @@ strm = logging.StreamHandler(sys.stdout)
 strm.setFormatter(frmt)
 log.addHandler(strm)
 
+# Seconds to wait before host os times out on ctrl transfer
+USB_TIMEOUT = 1000
 
 class ListDevices(object):
     def __init__(self):
@@ -46,6 +48,7 @@ class Device(object):
         self.tec_coeff0 = 3566.62
         self.tec_coeff1 = -143.543
         self.tec_coeff2 = -0.324723
+        self.trigger_source = 0
 
     def connect(self):
         """ Attempt to connect to the specified device. Log any failures and
@@ -121,22 +124,22 @@ class Device(object):
         so make sure all of the values are populated.
         """
 
-	wvl_c0 = float(wvl_cal[0])
-	wvl_c1 = float(wvl_cal[1])
-	wvl_c2 = float(wvl_cal[2])
-	wvl_c3 = float(wvl_cal[3])
+        wvl_c0 = float(wvl_cal[0])
+        wvl_c1 = float(wvl_cal[1])
+        wvl_c2 = float(wvl_cal[2])
+        wvl_c3 = float(wvl_cal[3])
 
-	tec_c0 = float(tec_cal[0])
-	tec_c1 = float(tec_cal[1])
-	tec_c2 = float(tec_cal[2])
+        tec_c0 = float(tec_cal[0])
+        tec_c1 = float(tec_cal[1])
+        tec_c2 = float(tec_cal[2])
 
-	tec_max = float(tec_cal[3]) # maximum
-	tec_min = float(tec_cal[4]) # minimum
+        tec_max = float(tec_cal[3]) # maximum
+        tec_min = float(tec_cal[4]) # minimum
 
-	laser_max = float(laser_cal[0]) # maximum
-	laser_min= float(laser_cal[1]) # minimum
+        laser_max = float(laser_cal[0]) # maximum
+        laser_min= float(laser_cal[1]) # minimum
 
-	placeholder = float(0.0)
+        placeholder = float(0.0)
 
         packed = struct.pack("4d8f",
                              wvl_c0, wvl_c1, wvl_c2, wvl_c3,
@@ -168,7 +171,7 @@ class Device(object):
                                                FID_wIndex,
                                                FID_data_or_wLength)
         except Exception as exc:
-            log.critical("Problem with ctrl transfer: %s", exc)
+            log.critical("SEND Problem with ctrl transfer: %s", exc)
 
         log.debug("Send Raw result: [%s]", result)
         return result
@@ -189,7 +192,7 @@ class Device(object):
                                                FID_wIndex,
                                                FID_wLength)
         except Exception as exc:
-            log.critical("Problem with ctrl transfer: %s", exc)
+            log.critical("GET Problem with ctrl transfer: %s", exc)
 
         log.debug("Get Raw result: [%s]", result)
         return result
@@ -311,12 +314,15 @@ class Device(object):
         back from the bulk endpoint.
         """
 
-        result = self.send_code(0xAD, FID_data_or_wLength="00000000")
+        # Only send the CMD_GET_IMAGE (internal trigger) if external
+        # trigger is disabled
+        if self.trigger_source == 0:
+            result = self.send_code(0xAD, FID_data_or_wLength="00000000")
 
         line_buffer = 2048 # 1024 16bit pixels
         if self.pid == 0x2000:
             line_buffer = 1024 # 512 16bit pixels
-        data = self.device.read(0x82, line_buffer, timeout=1000)
+        data = self.device.read(0x82, line_buffer, timeout=USB_TIMEOUT)
         log.debug("Raw data: %s", data)
 
         try:
@@ -419,3 +425,5 @@ class Device(object):
         """
         log.debug("Set CCD trigger to: %s", value)
         result = self.send_code(0xD2, value)
+        self.trigger_source = value
+

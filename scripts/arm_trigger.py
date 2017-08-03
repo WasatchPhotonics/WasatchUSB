@@ -5,7 +5,7 @@ external trigger opcode, then wait until USB timeout for data on the
 bulk endpoint.
 """
 
-import sys
+import sys, time
 import logging
 log = logging.getLogger()
 strm = logging.StreamHandler(sys.stderr)
@@ -61,7 +61,6 @@ def print_device():
 
 def print_data(device):
 
-    device.set_integration_time(100)
     data = device.get_line()
     avg_data =  sum(data) / len(data)
 
@@ -84,10 +83,13 @@ def print_data(device):
 if __name__ == "__main__":
     device = print_device()
 
+    #device.set_integration_time(100)
+
     # Set internal trigger, get a line of data
     device.set_trigger_source(0)
     print_data(device)
 
+    time.sleep(1)
 
     # Set external trigger, wait forever
     device.set_trigger_source(1)
