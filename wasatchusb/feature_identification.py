@@ -319,6 +319,7 @@ class Device(object):
         if self.trigger_source == 0:
             result = self.send_code(0xAD, FID_data_or_wLength="00000000")
 
+
         line_buffer = 2048 # 1024 16bit pixels
         if self.pid == 0x2000:
             line_buffer = 1024 # 512 16bit pixels
@@ -423,7 +424,9 @@ class Device(object):
     def set_trigger_source(self, value):
         """ 0 = internal, 1 = external. See the notes above for details.
         """
-        log.debug("Set CCD trigger to: %s", value)
-        result = self.send_code(0xD2, value)
+        log.info("Setting wait for external trigger")
         self.trigger_source = value
+
+        # Don't actually send the opcode on ARM. See issue #2
+        # result = self.send_code(0xD2, value)
 
