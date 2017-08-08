@@ -83,7 +83,7 @@ def print_data(device):
 if __name__ == "__main__":
     device = print_device()
 
-    #device.set_integration_time(100)
+    device.set_integration_time(300)
 
     # Set internal trigger, get a line of data
     device.set_trigger_source(0)

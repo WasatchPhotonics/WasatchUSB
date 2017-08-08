@@ -91,7 +91,7 @@ def print_data(device):
     individual spectrum, with a trending history of the reported CCD
     temperature.
     """
-    device.set_integration_time(3)
+    device.set_integration_time(300)
     init_tempc = None
     try:
         device.set_ccd_tec_setpoint(10.0)
