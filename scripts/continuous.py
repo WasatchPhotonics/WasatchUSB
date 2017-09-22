@@ -91,7 +91,7 @@ def print_data(device):
     individual spectrum, with a trending history of the reported CCD
     temperature.
     """
-    device.set_integration_time(300)
+    device.set_integration_time(100)
     init_tempc = None
     try:
         device.set_ccd_tec_setpoint(10.0)
@@ -104,10 +104,13 @@ def print_data(device):
     except IndexError as exc:
         log.warn("Cooler index failure: %s", exc)
 
-    try:
-        device.set_laser_enable(1)
-    except AttributeError as exc:
-        log.warn("No laser [%s]", exc)
+    if self.pid != 1:
+        try:
+            device.set_laser_enable(1)
+        except AttributeError as exc:
+            log.warn("No laser [%s]", exc)
+    else:
+        log.warn("DISABLING LASER FUNCTION FOR MTI")
 
 
     # Temperature data is stored for trending strip chart

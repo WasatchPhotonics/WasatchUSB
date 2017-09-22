@@ -277,7 +277,7 @@ class StrokerProtocolDevice(object):
         """ Read from end point 86 of the ancient-er 2048 pixel
             hamamatsu detector in MTI units.
         """
-        log.warn("Also read off end point 86")
+        log.debug("Also read off end point 86")
         data = self.device.read(0x86, 2048, timeout=1000)
         try:
             data = [i + 256 * j for i, j in zip(data[::2], data[1::2])]
