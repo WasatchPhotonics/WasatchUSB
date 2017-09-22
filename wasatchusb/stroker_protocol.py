@@ -256,6 +256,7 @@ class StrokerProtocolDevice(object):
         line_buffer = 2048 # 1024 16bit pixels
         if self.pid == 0x2000:
             line_buffer = 1024 # 512 16bit pixels
+
         data = self.device.read(0x82, line_buffer, timeout=1000)
         log.debug("Raw data: %s", data)
 
@@ -264,6 +265,21 @@ class StrokerProtocolDevice(object):
         except Exception as exc:
             log.critical("Failure in data unpack: %s", exc)
             data = None
+
+        log.warn("Data length for PID %x is %s", self.pid, len(data))
+
+        if self.pid == 1:
+            log.warn("Also read off end point 86")
+            sdata = self.device.read(0x86, line_buffer, timeout=1000)
+            log.warn("Second for PID %x is %s", self.pid, len(sdata))
+            try:
+                sdata = [i + 256 * j for i, j in zip(sdata[::2], sdata[1::2])]
+
+                data.extend(sdata)
+            except Exception as exc:
+                log.critical("Failure in data unpack: %s", exc)
+                data = None
+
 
         return data
 
