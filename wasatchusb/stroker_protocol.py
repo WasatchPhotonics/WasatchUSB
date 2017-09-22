@@ -367,6 +367,10 @@ class StrokerProtocolDevice(object):
         """ Write one for enable, zero for disable of laser on the
         device.
         """
+        if self.pid == 1:
+            log.warn("DISABLING LASER FUNCTION FOR MTI")
+            return
+
         log.debug("Send laser enable: %s", value)
         result = self.send_code(0xBE, value)
         return result
