@@ -266,20 +266,25 @@ class StrokerProtocolDevice(object):
             log.critical("Failure in data unpack: %s", exc)
             data = None
 
-        log.warn("Data length for PID %x is %s", self.pid, len(data))
-
+        # Append the 2048 pixel data for just MTI produt id (1)
         if self.pid == 1:
-            log.warn("Also read off end point 86")
-            sdata = self.device.read(0x86, line_buffer, timeout=1000)
-            log.warn("Second for PID %x is %s", self.pid, len(sdata))
-            try:
-                sdata = [i + 256 * j for i, j in zip(sdata[::2], sdata[1::2])]
+            second_half = self.read_second_half()
+            data.extend(second_half)
 
-                data.extend(sdata)
-            except Exception as exc:
-                log.critical("Failure in data unpack: %s", exc)
-                data = None
+        return data
 
+    def read_second_half(self):
+        """ Read from end point 86 of the ancient-er 2048 pixel
+            hamamatsu detector in MTI units.
+        """
+        log.warn("Also read off end point 86")
+        data = self.device.read(0x86, 2048, timeout=1000)
+        try:
+            data = [i + 256 * j for i, j in zip(data[::2], data[1::2])]
+
+        except Exception as exc:
+            log.critical("Failure in data unpack: %s", exc)
+            data = None
 
         return data
 
